@@ -38,7 +38,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
         }
 
         .badge {
@@ -55,20 +55,129 @@
 
         h1 {
             font-family: 'Syne', sans-serif;
-            font-size: 3rem;
-            margin-top: 20px;
-            margin-bottom: 15px;
+            font-size: 2.8rem;
+            margin-top: 15px;
+            margin-bottom: 10px;
             text-transform: uppercase;
         }
 
         p.subtitle {
             color: var(--text-body);
+            font-size: 1.05rem;
+        }
+
+        /* MAIN APP SECTION */
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        @media (max-width: 900px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #CBD5E1;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--neon-blue);
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            color: #000;
+            font-weight: 800;
             font-size: 1.1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-generate:hover {
+            opacity: 0.9;
+            transform: scale(1.01);
+        }
+
+        .qr-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .qr-display img {
+            max-width: 250px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-download {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
         }
 
         /* PRICING STYLES */
         .pricing-section {
-            margin-top: 80px;
+            margin-top: 40px;
             text-align: center;
         }
 
@@ -85,16 +194,10 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             padding: 35px 25px;
-            width: 300px;
+            width: 280px;
             text-align: left;
             position: relative;
             box-shadow: 0 15px 35px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease;
-        }
-
-        .price-card:hover {
-            transform: translateY(-5px);
         }
 
         .price-card.featured {
@@ -116,19 +219,19 @@
         }
 
         .plan-title {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             margin-bottom: 10px;
         }
 
         .price {
-            font-size: 2.5rem;
+            font-size: 2.3rem;
             font-weight: 800;
             margin-bottom: 20px;
         }
 
         .price span {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: var(--text-body);
             font-weight: 400;
         }
@@ -139,36 +242,24 @@
             margin: 0 0 30px 0;
             color: #CBD5E1;
             line-height: 2.2;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .btn-action {
             display: block;
             width: 100%;
-            padding: 14px;
+            padding: 12px;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 700;
             text-decoration: none;
-            cursor: pointer;
             box-sizing: border-box;
             border: none;
         }
 
-        .btn-free {
-            background: #1E293B;
-            color: #FFF;
-        }
-
-        .btn-blue {
-            background: var(--neon-blue);
-            color: #0F172A;
-        }
-
-        .btn-purple {
-            background: var(--neon-purple);
-            color: #0F172A;
-        }
+        .btn-free { background: #1E293B; color: #FFF; }
+        .btn-blue { background: var(--neon-blue); color: #0F172A; }
+        .btn-purple { background: var(--neon-purple); color: #0F172A; }
     </style>
 </head>
 <body>
@@ -176,17 +267,45 @@
     <div class="container">
         <div class="header">
             <span class="badge">● STUDIO PRO V5.0</span>
-            <h1>Preset Themes & Custom QR</h1>
-            <p class="subtitle">Pick Instagram, WhatsApp, Cyberpunk or Custom Palette</p>
+            <h1>QRCraft Pro Studio</h1>
+            <p class="subtitle">Generate Custom QR Codes with Preset Themes & High Quality Downloads</p>
+        </div>
+
+        <div class="app-grid">
+            <div class="card">
+                <form id="qrForm" action="/generate" method="POST">
+                    <div class="input-group">
+                        <label for="data">Text / Website URL</label>
+                        <input type="text" id="data" name="data" placeholder="https://example.com or Enter Text" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="theme">Preset Theme Style</label>
+                        <select id="theme" name="theme">
+                            <option value="classic">Classic Black & White</option>
+                            <option value="instagram">Instagram Gradient</option>
+                            <option value="whatsapp">WhatsApp Green</option>
+                            <option value="cyberpunk">Cyberpunk Neon</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-generate">Generate QR Code ✨</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="qr-display" id="qrContainer">
+                    <p style="color: var(--text-body);">Your generated QR code will appear here</p>
+                </div>
+            </div>
         </div>
 
         <div class="pricing-section">
-            <span class="badge">Flexible Plans</span>
+            <span class="badge">Flexible Pricing</span>
             <h2 style="font-size: 2.2rem; font-family: 'Syne', sans-serif; margin-top: 15px;">Choose Your Credits Pack</h2>
             <p class="subtitle">Start for free and top-up credits whenever you need more!</p>
 
             <div class="pricing-grid">
-                
                 <div class="price-card">
                     <div class="plan-title">Free Starter</div>
                     <div class="price">₹0 <span>/ forever</span></div>
@@ -202,31 +321,3 @@
                 <div class="price-card">
                     <div class="plan-title">Mini Pack</div>
                     <div class="price">₹10 <span>/ 100 Credits</span></div>
-                    <ul class="features-list">
-                        <li>✓ <b>100 Extra Credits</b></li>
-                        <li>✓ Unlimited Validity</li>
-                        <li>✓ High Resolution PNG & SVG</li>
-                        <li>✓ Standard Support</li>
-                    </ul>
-                    <a href="#" class="btn-action btn-blue">Buy 100 Credits (₹10)</a>
-                </div>
-
-                <div class="price-card featured">
-                    <span class="pop-badge">Best Value</span>
-                    <div class="plan-title">Pro Value Pack</div>
-                    <div class="price">₹100 <span>/ 1,000 Credits</span></div>
-                    <ul class="features-list">
-                        <li>✓ <b>1,000 Extra Credits</b></li>
-                        <li>✓ Lifetime Validity</li>
-                        <li>✓ SVG, PNG, PDF & Vector Export</li>
-                        <li>✓ Priority High-Speed Generation</li>
-                    </ul>
-                    <a href="#" class="btn-action btn-purple">Buy 1,000 Credits (₹100)</a>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>

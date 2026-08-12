@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRCraft Pro — Ultimate QR Code Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #06080D;
+            --card-glass: rgba(16, 24, 40, 0.75);
+            --neon-blue: #38BDF8;
+            --neon-purple: #C084FC;
+            --text-heading: #FFFFFF;
+            --text-body: #94A3B8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body { 
+            background: var(--bg-dark);
+            color: var(--text-heading);
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .glow-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.35;
+        }
+        .orb-1 { width: 450px; height: 450px; background: var(--neon-blue); top: -10%; left: -5%; }
+        .orb-2 { width: 500px; height: 500px; background: var(--neon-purple); bottom: -10%; right: -5%; }
+
+        .app-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 920px;
+        }
+
+        header { text-align: center; margin-bottom: 35px; }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--neon-blue);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .badge-dot { width: 7px; height: 7px; background: var(--neon-blue); border-radius: 50%; }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 44px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFFFFF 20%, #94A3B8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        header p { color: var(--text-body); font-size: 16px; }
+
+        .alert-box {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            color: #FECDD3;
+            padding: 14px;
+            border-radius: 14px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .grid-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .option-card {
+            background: var(--card-glass);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 22px;
+            padding: 24px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .option-card.active {
+            border-color: var(--neon-blue);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .card-icon { font-size: 32px; margin-bottom: 14px; display: block; }
+        .card-heading { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+        .card-sub { font-size: 13px; color: var(--text-body); }
+
+        .workspace-card {
+            background: var(--card-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 40px;
+        }
+
+        .input-group { margin-bottom: 24px; }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 800;
+            color: #CBD5E1;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 16px;
+            background: rgba(6, 8, 13, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            color: #FFF;
+            outline: none;
+        }
+
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .style-btn {
+            background: rgba(6, 8, 13, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            padding: 12px 8px;
+            border-radius: 14px;
+            color: #FFF;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .style-btn:hover, .style-btn.active {
+            border-color: var(--neon-blue);
+            background: rgba(56, 189, 248, 0.15);
+        }
+
+        .style-btn.insta { border-color: #E1306C; }
+        .style-btn.insta.active { background: rgba(225, 48, 108, 0.2); }
+
+        .style-btn.wa { border-color: #25D366; }
+        .style-btn.wa.active { background: rgba(37, 211, 102, 0.2); }
+
+        .upload-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .upload-zone input { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+
+        .color-picker-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(6, 8, 13, 0.7);
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            padding: 10px 16px;
+            border-radius: 14px;
+        }
+
+        input[type="color"] {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        button.action-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--neon-blue) 0%, #818CF8 50%, var(--neon-purple) 100%);
+            border: none;
+            border-radius: 16px;
+            color: #06080D;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .output-zone { margin-top: 40px; text-align: center; }
+
+        .qr-frame-wrapper {
+            display: inline-block;
+            background: #FFF;
+            padding: 24px;
+            border-radius: 28px;
+            border: 3px solid #06080D;
+        }
+
+        .qr-frame-wrapper img { width: 220px; height: 220px; display: block; }
+
+        .qr-frame-badge {
+            margin-top: 14px;
+            background: #06080D;
+            color: #FFF;
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-weight: 800;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .download-actions { display: flex; justify-content: center; gap: 12px; margin-top: 25px; flex-wrap: wrap; }
+
+        .btn-download {
+            padding: 12px 20px;
+            background: #FFF;
+            color: #06080D;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 13px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-download:hover { background: var(--neon-blue); }
+
+        @media (max-width: 768px) {
+            .grid-options, .style-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="app-wrapper">
+        <header>
+            <div class="badge-tag"><span class="badge-dot"></span> Studio Pro v5.0</div>
+            <h1>Preset Themes & Custom QR</h1>
+            <p>Pick Instagram, WhatsApp, Cyberpunk or Custom Palette</p>
+        </header>
+
+        {% if error_msg %}
+            <div class="alert-box">⚠️ {{ error_msg }}</div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" id="qrForm">
+            <input type="hidden" name="qr_type" id="qr_type" value="{{ qr_type if qr_type else 'text' }}">
+            <input type="hidden" name="qr_style" id="qr_style" value="{{ qr_style if qr_style else 'cyberpunk' }}">
+
+            <div class="grid-options">
+                <div class="option-card {% if qr_type == 'text' or not qr_type %}active{% endif %}" id="card-text" onclick="selectMode('text')">
+                    <span class="card-icon">🚀</span>
+                    <div class="card-heading">Smart Link</div>
+                    <div class="card-sub">Websites, social handles, dynamic text.</div>
+                </div>
+
+                <div class="option-card {% if qr_type == 'wifi' %}active{% endif %}" id="card-wifi" onclick="selectMode('wifi')">
+                    <span class="card-icon">📶</span>
+                    <div class="card-heading">Wi-Fi Connect</div>
+                    <div class="card-sub">Instant scanner connection.</div>
+                </div>
+
+                <div class="option-card {% if qr_type == 'image' %}active{% endif %}" id="card-image" onclick="selectMode('image')">
+                    <span class="card-icon">📸</span>
+                    <div class="card-heading">Photo Direct</div>
+                    <div class="card-sub">Direct scan image link.</div>
+                </div>
+            </div>
+
+            <div class="workspace-card">
+                <div id="field-text" style="display: {% if qr_type == 'text' or not qr_type %}block{% else %}none{% endif %};">
+                    <div class="input-group">
+                        <label>Destination Web Link or Text</label>
+                        <input type="text" name="data" placeholder="e.g. https://instagram.com/yourbrand" value="{{ user_data }}">
+                    </div>
+                </div>
+
+                <div id="field-wifi" style="display: {% if qr_type == 'wifi' %}block{% else %}none{% endif %};">
+                    <div class="input-group">
+                        <label>Wi-Fi Network Name (SSID)</label>
+                        <input type="text" name="ssid" placeholder="e.g. Studio_5G" value="{{ ssid }}">
+                    </div>
+                    <div class="input-group">
+                        <label>Wi-Fi Password</label>
+                        <input type="password" name="wifi_pass" placeholder="Network password" value="{{ wifi_pass }}">
+                    </div>
+                </div>
+
+                <div id="field-image" style="display: {% if qr_type == 'image' %}block{% else %}none{% endif %};">
+                    <div class="input-group">
+                        <label>Upload Image Payload</label>
+                        <div class="upload-zone">
+                            <input type="file" name="qr_image" accept="image/*" onchange="updateFileName(this, 'file-title')">
+                            <div id="file-title">📁 Click or Drag Image Here</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Choose Preset Style Theme</label>
+                    <div class="style-grid">
+                        <div class="style-btn {% if qr_style == 'cyberpunk' %}active{% endif %}" onclick="selectStyle('cyberpunk')">⚡ Cyberpunk</div>
+                        <div class="style-btn insta {% if qr_style == 'instagram' %}active{% endif %}" onclick="selectStyle('instagram')">📸 Instagram</div>
+                        <div class="style-btn wa {% if qr_style == 'whatsapp' %}active{% endif %}" onclick="selectStyle('whatsapp')">💬 WhatsApp</div>
+                        <div class="style-btn {% if qr_style == 'classic' %}active{% endif %}" onclick="selectStyle('classic')">🏁 Classic</div>
+                        <div class="style-btn {% if qr_style == 'custom' %}active{% endif %}" onclick="selectStyle('custom')">🎨 Custom</div>
+                    </div>
+                </div>
+
+                <div id="custom-colors" style="display: {% if qr_style == 'custom' %}grid{% else %}none{% endif %}; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="color-picker-box">
+                        <input type="color" name="fill_color" value="{{ fill_color }}">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-body);">QR Dots Color</span>
+                    </div>
+                    <div class="color-picker-box">
+                        <input type="color" name="back_color" value="{{ back_color }}">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-body);">Background</span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="input-group">
+                        <label>Center Logo (Optional)</label>
+                        <div class="upload-zone" style="padding:12px;">
+                            <input type="file" name="logo_image" accept="image/*" onchange="updateFileName(this, 'logo-title')">
+                            <div id="logo-title">🎯 Upload Logo</div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Frame Tagline</label>
+                        <input type="text" name="frame_text" value="{{ frame_text }}">
+                    </div>
+                </div>
+
+                <button type="submit" class="action-btn">Craft Branded QR Code</button>
+
+                {% if qr_generated %}
+                    <div class="output-zone">
+                        <div class="qr-frame-wrapper">
+                            <img id="qr-img-element" src="data:image/png;base64,{{ qr_img_base64 }}" alt="QR Code">
+                            <div class="qr-frame-badge">{{ frame_text if frame_text else 'SCAN ME' }}</div>
+                        </div>
+
+                        <div class="download-actions">
+                            <button type="button" onclick="downloadPNG()" class="btn-download">💾 PNG</button>
+                            <button type="button" onclick="downloadPDF()" class="btn-download">📄 PDF</button>
+                            <button type="button" onclick="copyImage()" class="btn-download" id="copy-btn">📋 Copy Image</button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function selectMode(type) {
+            document.getElementById('qr_type').value = type;
+            document.getElementById('field-text').style.display = (type === 'text') ? 'block' : 'none';
+            document.getElementById('field-wifi').style.display = (type === 'wifi') ? 'block' : 'none';
+            document.getElementById('field-image').style.display = (type === 'image') ? 'block' : 'none';
+
+            document.getElementById('card-text').classList.toggle('active', type === 'text');
+            document.getElementById('card-wifi').classList.toggle('active', type === 'wifi');
+            document.getElementById('card-image').classList.toggle('active', type === 'image');
+        }
+
+        function selectStyle(style) {
+            document.getElementById('qr_style').value = style;
+            const buttons = document.querySelectorAll('.style-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.getElementById('custom-colors').style.display = (style === 'custom') ? 'grid' : 'none';
+        }
+
+        function updateFileName(input, targetId) {
+            if (input.files && input.files[0]) {
+                document.getElementById(targetId).innerText = "✓ " + input.files[0].name;
+            }
+        }
+
+        function downloadPNG() {
+            const link = document.createElement('a');
+            link.download = 'qrcraft-style.png';
+            link.href = document.getElementById('qr-img-element').src;
+            link.click();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const imgData = document.getElementById('qr-img-element').src;
+            doc.text("QRCraft — {{ qr_style|upper }} Style", 105, 30, { align: "center" });
+            doc.addImage(imgData, 'PNG', 55, 50, 100, 100);
+            doc.save("qrcraft-design.pdf");
+        }
+
+        async function copyImage() {
+            try {
+                const img = document.getElementById('qr-img-element');
+                const response = await fetch(img.src);
+                const blob = await response.blob();
+                await navigator.clipboard.write([
+                    new ClipboardItem({ [blob.type]: blob })
+                ]);
+                const btn = document.getElementById('copy-btn');
+                btn.innerText = "✓ Copied!";
+                setTimeout(() => { btn.innerText = "📋 Copy Image"; }, 2000);
+            } catch (err) {
+                alert("Direct clipboard copy requires HTTPS or Localhost.");
+            }
+        }
+    </script>
+</body>
+</html>

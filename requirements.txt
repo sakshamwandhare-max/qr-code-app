@@ -1,0 +1,5 @@
+Flask
+qrcode
+Pillow
+gunicorn
+Flask-Limiter

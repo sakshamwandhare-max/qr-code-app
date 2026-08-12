@@ -3,3 +3,4 @@ Flask-SQLAlchemy
 Flask-Login
 razorpay
 werkzeug
+gunicorn

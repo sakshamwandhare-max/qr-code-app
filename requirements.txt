@@ -1,6 +1,6 @@
-Flask
-Flask-SQLAlchemy
-Flask-Login
-razorpay
-werkzeug
-gunicorn
+Flask==3.0.3
+Flask-SQLAlchemy==3.1.1
+Flask-Login==0.6.3
+razorpay==1.4.1
+werkzeug==3.0.3
+gunicorn==22.0.0

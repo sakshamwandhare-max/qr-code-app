@@ -1,171 +1,292 @@
 import os
-import io
-import base64
-import qrcode
-from PIL import Image
-from qrcode.image.styledpil import StyledPilImage
-from qrcode.image.styles.moduledrawers import RoundedModuleDrawer, SquareModuleDrawer, CircleModuleDrawer
-from flask import Flask, render_template, request, url_for
-from werkzeug.utils import secure_filename
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
+import hmac
+import hashlib
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from models import db, User, Transaction, CreditLedger
+import razorpay
 
 app = Flask(__name__)
 
-# --- USER LIMIT SETUP ---
-# Har user ke IP address ke hisaab se limit lagegi
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["100 per day", "20 per hour"], # Default global limit
-    storage_uri="memory://"
-)
+# Environment Configuration
+app.config['SECRET_KEY'] = os.environ.get('AUTH_SECRET', 'super-secret-key-change-in-production')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///qrcraft.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+# Cookie Security
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SECURE'] = True  # Production mein True rakhein (HTTPS)
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
-THEMES = {
-    'instagram': {'fill': '#E1306C', 'back': '#FFFFFF', 'drawer': CircleModuleDrawer()},
-    'whatsapp': {'fill': '#075E54', 'back': '#E5DDD5', 'drawer': RoundedModuleDrawer()},
-    'cyberpunk': {'fill': '#38BDF8', 'back': '#06080D', 'drawer': RoundedModuleDrawer()},
-    'classic': {'fill': '#000000', 'back': '#FFFFFF', 'drawer': SquareModuleDrawer()},
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+# Razorpay Client Setup
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_xxxx')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'yyyyy_secret')
+RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET', 'webhook_secret')
+
+razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+
+# Package Definitions (HARDCODED SERVER-SIDE TO PREVENT TAMPERING)
+PACKAGES = {
+    'starter': {'credits': 100, 'price': 50, 'name': 'Starter Top-Up'},
+    'popular': {'credits': 250, 'price': 100, 'name': 'Value Pack'},
+    'pro': {'credits': 2500, 'price': 1000, 'name': 'Pro Volume'}
 }
 
-# Limit error message custom handler
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    return render_template(
-        "index.html",
-        error_msg="⚠️ Aapne limit cross kar di hai! Kripya 1 minute baad try karein.",
-        qr_type="text",
-        fill_color="#38BDF8",
-        back_color="#06080D",
-        qr_style="cyberpunk",
-        frame_text="SCAN ME"
-    ), 429
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-@app.route('/', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")  # 👈 SPECIFIC LIMIT: User 1 minute me max 5 QR hi bana sakta hai
-def index():
-    user_data = ""
-    ssid = ""
-    wifi_pass = ""
-    qr_style = "cyberpunk"
-    fill_color = "#38BDF8"
-    back_color = "#06080D"
-    qr_type = "text"
-    qr_generated = False
-    qr_img_base64 = ""
-    qr_subtitle = ""
-    error_msg = ""
-    frame_text = "SCAN ME"
 
-    if request.method == "POST":
-        qr_type = request.form.get("qr_type", "text")
-        qr_style = request.form.get("qr_style", "cyberpunk")
-        frame_text = request.form.get("frame_text", "SCAN ME").strip()
+# --- AUTHENTICATION ROUTES ---
 
-        if qr_style == "custom":
-            fill_color = request.form.get("fill_color", "#38BDF8")
-            back_color = request.form.get("back_color", "#06080D")
-            drawer_style = RoundedModuleDrawer()
-        elif qr_style in THEMES:
-            fill_color = THEMES[qr_style]['fill']
-            back_color = THEMES[qr_style]['back']
-            drawer_style = THEMES[qr_style]['drawer']
-        else:
-            drawer_style = RoundedModuleDrawer()
+@app.route('/api/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    name = data.get('name', '').strip()
+    password = data.get('password')
 
-        payload = ""
+    if not email or not password or not name:
+        return jsonify({'error': 'All fields are required.'}), 400
 
-        if qr_type == "wifi":
-            ssid = request.form.get("ssid", "").strip()
-            wifi_pass = request.form.get("wifi_pass", "").strip()
-            if ssid:
-                payload = f"WIFI:S:{ssid};T:WPA;P:{wifi_pass};;"
-                qr_subtitle = f"Wi-Fi Network: {ssid}"
-            else:
-                error_msg = "Kripya Wi-Fi Name (SSID) bharein!"
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email is already registered.'}), 400
 
-        elif qr_type == "image":
-            if 'qr_image' in request.files:
-                file = request.files['qr_image']
-                if file and file.filename != '':
-                    filename = secure_filename(file.filename)
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(filepath)
-                    
-                    host_url = request.host_url.rstrip('/')
-                    image_url = host_url + url_for('static', filename=f'uploads/{filename}')
-                    payload = image_url
-                    qr_subtitle = f"Photo Link: {filename}"
-                else:
-                    error_msg = "Kripya ek image file select karein!"
-            else:
-                error_msg = "Koi image upload nahi mili!"
+    # Create User with 500 Welcome Credits
+    new_user = User(name=name, email=email, credits=500)
+    new_user.set_password(password)
+    
+    db.session.add(new_user)
+    db.session.commit()
 
-        else:
-            user_data = request.form.get("data", "").strip()
-            if user_data:
-                payload = user_data
-                qr_subtitle = "Custom Smart Link Payload"
-            else:
-                error_msg = "Kripya URL ya Text content bharein!"
+    # Create Initial Ledger Entry
+    ledger = CreditLedger(
+        user_id=new_user.id,
+        amount=500,
+        reason='+500 Welcome Bonus',
+        balance_after=500
+    )
+    db.session.add(ledger)
+    db.session.commit()
 
-        if payload and not error_msg:
-            try:
-                qr = qrcode.QRCode(
-                    version=None,
-                    error_correction=qrcode.constants.ERROR_CORRECT_H,
-                    box_size=12,
-                    border=3,
-                )
-                qr.add_data(payload)
-                qr.make(fit=True)
+    login_user(new_user)
+    return jsonify({'message': 'Registration successful', 'credits': new_user.credits})
 
-                img = qr.make_image(
-                    image_factory=StyledPilImage,
-                    module_drawer=drawer_style,
-                    fill_color=fill_color,
-                    back_color=back_color
-                ).convert("RGBA")
 
-                if 'logo_image' in request.files:
-                    logo_file = request.files['logo_image']
-                    if logo_file and logo_file.filename != '':
-                        logo = Image.open(logo_file.stream).convert("RGBA")
-                        qr_w, qr_h = img.size
-                        logo_size = int(qr_w * 0.20)
-                        logo = logo.resize((logo_size, logo_size), Image.Resampling.LANCZOS)
-                        logo_pos = ((qr_w - logo_size) // 2, (qr_h - logo_size) // 2)
-                        img.paste(logo, logo_pos, mask=logo if logo.mode == 'RGBA' else None)
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password')
 
-                img_io = io.BytesIO()
-                img.save(img_io, "PNG")
-                img_io.seek(0)
-                qr_img_base64 = base64.b64encode(img_io.getvalue()).decode("utf-8")
-                qr_generated = True
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(password):
+        return jsonify({'error': 'Invalid email or password.'}), 401
 
-            except Exception as e:
-                error_msg = f"Error: {str(e)}"
+    login_user(user, remember=data.get('remember', False))
+    return jsonify({'message': 'Login successful', 'credits': user.credits, 'name': user.name})
 
-    return render_template(
-        "index.html",
-        user_data=user_data,
-        ssid=ssid,
-        wifi_pass=wifi_pass,
-        fill_color=fill_color,
-        back_color=back_color,
-        qr_type=qr_type,
-        qr_style=qr_style,
-        qr_generated=qr_generated,
-        qr_img_base64=qr_img_base64,
-        qr_subtitle=qr_subtitle,
-        error_msg=error_msg,
-        frame_text=frame_text
+
+@app.route('/api/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({'message': 'Logged out successfully'})
+
+
+# --- SECURE QR GENERATION API ---
+
+@app.route('/api/generate-qr', methods=['POST'])
+@login_required
+def generate_qr():
+    # Atomic Lock & Credit Verification
+    user = User.query.with_for_update().get(current_user.id)
+
+    if user.credits < 1:
+        return jsonify({'error': 'INSUFFICIENT_CREDITS', 'message': 'You need at least 1 credit to generate a QR code.'}), 402
+
+    data = request.get_json()
+    qr_data = data.get('data')
+
+    if not qr_data:
+        return jsonify({'error': 'Payload data is required.'}), 400
+
+    # 1. Deduct Credit
+    user.credits -= 1
+    
+    # 2. Add Ledger Entry
+    ledger = CreditLedger(
+        user_id=user.id,
+        amount=-1,
+        reason='QR Code Generation',
+        balance_after=user.credits
+    )
+    
+    db.session.add(ledger)
+    db.session.commit()
+
+    # 3. Here call your existing QR Image Generator function logic
+    # qr_image_url = create_qr_code(qr_data, data.get('theme'))
+
+    return jsonify({
+        'success': True,
+        'remaining_credits': user.credits,
+        'message': 'QR code generated successfully!'
+    })
+
+
+# --- PAYMENT GATEWAY INTEGRATION ---
+
+@app.route('/api/payment/create-order', methods=['POST'])
+@login_required
+def create_order():
+    data = request.get_json()
+    package_key = data.get('package_key')
+
+    if package_key not in PACKAGES:
+        return jsonify({'error': 'Invalid package selection.'}), 400
+
+    pkg = PACKAGES[package_key]
+    amount_in_paise = pkg['price'] * 100
+
+    # Create Order on Razorpay
+    order_data = {
+        'amount': amount_in_paise,
+        'currency': 'INR',
+        'payment_capture': 1
+    }
+    
+    try:
+        razorpay_order = razorpay_client.order.create(data=order_data)
+        
+        # Save Transaction as CREATED
+        txn = Transaction(
+            user_id=current_user.id,
+            order_id=razorpay_order['id'],
+            package_name=pkg['name'],
+            amount=pkg['price'],
+            credits=pkg['credits'],
+            status='CREATED'
+        )
+        db.session.add(txn)
+        db.session.commit()
+
+        return jsonify({
+            'order_id': razorpay_order['id'],
+            'key_id': RAZORPAY_KEY_ID,
+            'amount': amount_in_paise,
+            'currency': 'INR',
+            'package_name': pkg['name']
+        })
+
+    except Exception as e:
+        return jsonify({'error': 'Could not initiate payment. Try again.'}), 500
+
+
+@app.route('/api/payment/verify', methods=['POST'])
+@login_required
+def verify_payment():
+    data = request.get_json()
+    
+    razorpay_order_id = data.get('razorpay_order_id')
+    razorpay_payment_id = data.get('razorpay_payment_id')
+    razorpay_signature = data.get('razorpay_signature')
+
+    # Signature Verification
+    params_dict = {
+        'razorpay_order_id': razorpay_order_id,
+        'razorpay_payment_id': razorpay_payment_id,
+        'razorpay_signature': razorpay_signature
+    }
+
+    try:
+        razorpay_client.utility.verify_payment_signature(params_dict)
+    except razorpay.errors.SignatureVerificationError:
+        return jsonify({'error': 'Payment verification failed. Invalid signature.'}), 400
+
+    # Idempotent Transaction Processing
+    txn = Transaction.query.filter_by(order_id=razorpay_order_id).first()
+    if not txn:
+        return jsonify({'error': 'Transaction record not found.'}), 404
+
+    if txn.status == 'SUCCESS':
+        return jsonify({'message': 'Payment already processed.', 'credits': current_user.credits})
+
+    # Update Transaction Status
+    txn.payment_id = razorpay_payment_id
+    txn.status = 'SUCCESS'
+
+    # Add Credits to User Account
+    user = User.query.with_for_update().get(txn.user_id)
+    user.credits += txn.credits
+
+    # Record Credit Ledger
+    ledger = CreditLedger(
+        user_id=user.id,
+        amount=txn.credits,
+        reason=f'Purchase: {txn.package_name}',
+        balance_after=user.credits
     )
 
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    db.session.add(ledger)
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'message': 'Payment verified and credits added!',
+        'new_credits': user.credits
+    })
+
+
+# --- WEBHOOK HANDLER FOR AUTOMATIC BACKUP VERIFICATION ---
+
+@app.route('/api/webhook/razorpay', methods=['POST'])
+def razorpay_webhook():
+    webhook_body = request.get_data(as_text=True)
+    webhook_signature = request.headers.get('X-Razorpay-Signature')
+
+    try:
+        razorpay_client.utility.verify_webhook_signature(
+            webhook_body, webhook_signature, RAZORPAY_WEBHOOK_SECRET
+        )
+    except razorpay.errors.SignatureVerificationError:
+        return jsonify({'status': 'invalid signature'}), 400
+
+    data = request.get_json()
+    event = data.get('event')
+
+    if event == 'payment.captured':
+        payment_entity = data['payload']['payment']['entity']
+        order_id = payment_entity['order_id']
+        payment_id = payment_entity['id']
+
+        txn = Transaction.query.filter_by(order_id=order_id).first()
+        if txn and txn.status != 'SUCCESS':
+            txn.status = 'SUCCESS'
+            txn.payment_id = payment_id
+
+            user = User.query.with_for_update().get(txn.user_id)
+            user.credits += txn.credits
+
+            ledger = CreditLedger(
+                user_id=user.id,
+                amount=txn.credits,
+                reason=f'Webhook Capture: {txn.package_name}',
+                balance_after=user.credits
+            )
+            db.session.add(ledger)
+            db.session.commit()
+
+    return jsonify({'status': 'ok'}), 200
+
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)

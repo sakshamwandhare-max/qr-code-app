@@ -1,5 +1,5 @@
 Flask
-qrcode
-Pillow
-gunicorn
-Flask-Limiter
+Flask-SQLAlchemy
+Flask-Login
+razorpay
+werkzeug

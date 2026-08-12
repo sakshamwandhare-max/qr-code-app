@@ -26,4 +26,9 @@ except Exception:
 PACKAGES = {
     'p100': {'price': 100, 'credits': 200, 'name': 'Starter Pack (₹100)'},
     'p200': {'price': 200, 'credits': 400, 'name': 'Pro Pack (₹200)'},
-    'p1000': {'price': 1000, 'credits': 2000, 'name': 'Ultra Pack (₹
+    'p1000': {'price': 1000, 'credits': 2000, 'name': 'Ultra Pack (₹100)'}
+    with app.app_context():
+    db.create_all()
+
+if __name__ == '__main__':
+    app.run(debug=True)

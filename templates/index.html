@@ -1,62 +1,154 @@
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRCraft Pro — Enterprise QR Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        :root { --bg: #07090E; --surface: #0E131F; --accent: #38BDF8; --text: #F8FAFC; }
+        body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; }
+        .nav { display: flex; justify-content: space-between; align-items: center; padding: 16px 30px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .btn { background: var(--accent); color: #000; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; text-align: center; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { background: var(--surface); border: 1px solid rgba(255,255,255,0.1); padding: 25px; border-radius: 16px; text-align: left; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; }
+        .modal-content { background: var(--surface); padding: 30px; border-radius: 16px; width: 320px; text-align: left; }
+        input { width: 100%; padding: 10px; margin: 8px 0 16px; background: #000; border: 1px solid #333; color: #fff; border-radius: 6px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
 
-<script>
-async function initiatePayment(packageKey) {
-    try {
-        // Step 1: Create Order on Server
-        const response = await fetch('/api/payment/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ package_key: packageKey })
-        });
+    <nav class="nav">
+        <h2>QRCraft Pro</h2>
+        <div id="authSection">
+            <button class="btn" onclick="openModal('loginModal')">Login / Signup</button>
+        </div>
+    </nav>
 
-        const orderData = await response.json();
+    <div class="container">
+        <h1>Create Premium QR Codes</h1>
+        <p style="color: #94A3B8;">500 Free Credits on Signup | Fast & Dynamic</p>
 
-        if (!response.ok) {
-            alert(orderData.error || 'Failed to initialize payment.');
-            return;
+        <h2 style="margin-top: 60px;">Credit Top-Up Plans</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Free Starter</h3>
+                <h2>₹0</h2>
+                <p>✓ 500 Credits on Signup</p>
+            </div>
+            <div class="card">
+                <h3>Starter</h3>
+                <h2>₹50</h2>
+                <p>✓ 100 Credits</p>
+                <button class="btn" onclick="buyCredits(50, 100)">Buy ₹50</button>
+            </div>
+            <div class="card" style="border-color: var(--accent);">
+                <h3>Popular</h3>
+                <h2>₹100</h2>
+                <p>✓ 250 Credits</p>
+                <button class="btn" onclick="buyCredits(100, 250)">Buy ₹100</button>
+            </div>
+            <div class="card">
+                <h3>Pro Volume</h3>
+                <h2>₹1,000</h2>
+                <p>✓ 2,500 Credits</p>
+                <button class="btn" onclick="buyCredits(1000, 2500)">Buy ₹1,000</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Account Login</h3>
+            <input type="text" id="userName" placeholder="Full Name (for Signup)" style="display:none;">
+            <input type="email" id="userEmail" placeholder="Email Address">
+            <input type="password" id="userPassword" placeholder="Password">
+            <button class="btn" style="width: 100%;" onclick="submitAuth()">Submit</button>
+            <p style="font-size: 12px; margin-top: 15px; cursor: pointer; color: var(--accent);" onclick="toggleAuthMode()">Switch to Signup / Login</p>
+        </div>
+    </div>
+
+    <script>
+        let isSignup = false;
+        let currentUser = null;
+
+        async function checkUserStatus() {
+            let res = await fetch('/api/user-status');
+            let data = await res.json();
+            if(data.logged_in) {
+                currentUser = data;
+                document.getElementById('authSection').innerHTML = `
+                    <span style="margin-right: 15px;">⚡ <b>${data.credits} Credits</b> (${data.name})</span>
+                    <button class="btn" style="background:#ef4444; color:#fff;" onclick="logout()">Logout</button>
+                `;
+            }
+        }
+        checkUserStatus();
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        function toggleAuthMode() {
+            isSignup = !isSignup;
+            document.getElementById('modalTitle').innerText = isSignup ? 'Create Account' : 'Account Login';
+            document.getElementById('userName').style.display = isSignup ? 'block' : 'none';
         }
 
-        // Step 2: Open Razorpay Gateway Modal
-        const options = {
-            "key": orderData.key_id,
-            "amount": orderData.amount,
-            "currency": orderData.currency,
-            "name": "QRCraft Pro",
-            "description": `Purchase ${orderData.package_name}`,
-            "order_id": orderData.order_id,
-            "handler": async function (razorpayResponse) {
-                // Step 3: Verify Payment Signature on Server
-                const verifyRes = await fetch('/api/payment/verify', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        razorpay_order_id: razorpayResponse.razorpay_order_id,
-                        razorpay_payment_id: razorpayResponse.razorpay_payment_id,
-                        razorpay_signature: razorpayResponse.razorpay_signature
-                    })
-                });
-
-                const verifyData = await verifyRes.json();
-
-                if (verifyRes.ok && verifyData.success) {
-                    alert(`🎉 Payment Successful! ${verifyData.new_credits} Credits available now.`);
-                    location.reload(); // UI Refresh
-                } else {
-                    alert(verifyData.error || 'Payment verification failed.');
-                }
-            },
-            "theme": {
-                "color": "#38BDF8"
+        async function submitAuth() {
+            let url = isSignup ? '/api/signup' : '/api/login';
+            let body = {
+                email: document.getElementById('userEmail').value,
+                password: document.getElementById('userPassword').value,
+                name: document.getElementById('userName').value
+            };
+            let res = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            let data = await res.json();
+            if(res.ok) {
+                alert('Success!');
+                location.reload();
+            } else {
+                alert(data.error);
             }
-        };
+        }
 
-        const rzp = new Razorpay(options);
-        rzp.open();
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            location.reload();
+        }
 
-    } catch (err) {
-        console.error("Payment Error:", err);
-        alert("An unexpected error occurred.");
-    }
-}
-</script>
+        async function buyCredits(amount, credits) {
+            if(!currentUser) { alert('Pehle Login Karein!'); openModal('loginModal'); return; }
+
+            let res = await fetch('/api/create-order', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ amount: amount })
+            });
+            let order = await res.json();
+
+            let options = {
+                "key": order.key_id,
+                "amount": order.amount,
+                "currency": "INR",
+                "name": "QRCraft Pro",
+                "description": `Buy ${credits} Credits`,
+                "order_id": order.order_id,
+                "handler": async function (response) {
+                    await fetch('/api/verify-payment', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ credits: credits })
+                    });
+                    alert(`Payment Successful! ${credits} Credits Added.`);
+                    location.reload();
+                }
+            };
+            let rzp = new Razorpay(options);
+            rzp.open();
+        }
+    </script>
+</body>
+</html>

@@ -8,14 +8,13 @@ import razorpay
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.environ.get('AUTH_SECRET', 'qrcraft-ultra-key-2026')
-# SQLite database path fixed for Render
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'qrcraft.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'index'
 
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_TOv6hvuqa6llce')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'dummy_secret')
@@ -43,6 +42,9 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
@@ -98,7 +100,7 @@ def user_status():
 def generate_qr():
     user = User.query.get(current_user.id)
     if user.credits < QR_COST:
-        return jsonify({'error': 'INSUFFICIENT_CREDITS', 'message': f'Kam se kam {QR_COST} credits chahiye.'}), 402
+        return jsonify({'error': 'INSUFFICIENT_CREDITS', 'message': f'Kam se kam {QR_COST} credits chahiye. Top-up karein.'}), 402
 
     data = request.get_json() or {}
     payload = data.get('payload')
@@ -109,9 +111,51 @@ def generate_qr():
     db.session.commit()
     return jsonify({'success': True, 'remaining_credits': user.credits, 'payload': payload})
 
-# Database creation before server start
-with app.app_context():
-    db.create_all()
+@app.route('/api/create-order', methods=['POST'])
+@login_required
+def create_order():
+    data = request.get_json() or {}
+    pkg_key = data.get('package_key')
+
+    if pkg_key not in PACKAGES:
+        return jsonify({'error': 'Invalid Package'}), 400
+
+    pkg = PACKAGES[pkg_key]
+    amount_paise = pkg['price'] * 100
+
+    if not razor_client:
+        return jsonify({'error': 'Razorpay keys missing hai.'}), 500
+
+    try:
+        order = razor_client.order.create({
+            'amount': amount_paise,
+            'currency': 'INR',
+            'payment_capture': 1
+        })
+        return jsonify({
+            'order_id': order['id'],
+            'key_id': RAZORPAY_KEY_ID,
+            'amount': amount_paise,
+            'package_name': pkg['name'],
+            'credits': pkg['credits']
+        })
+    except Exception as e:
+        return jsonify({'error': 'Razorpay Order Creation Failed', 'details': str(e)}), 500
+
+@app.route('/api/verify-payment', methods=['POST'])
+@login_required
+def verify_payment():
+    data = request.get_json() or {}
+    pkg_key = data.get('package_key')
+
+    if pkg_key in PACKAGES:
+        added_credits = PACKAGES[pkg_key]['credits']
+        user = User.query.get(current_user.id)
+        user.credits += added_credits
+        db.session.commit()
+        return jsonify({'success': True, 'new_credits': user.credits})
+
+    return jsonify({'error': 'Verification Failed'}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)

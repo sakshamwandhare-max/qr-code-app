@@ -7,16 +7,16 @@ import razorpay
 
 app = Flask(__name__)
 
-# Secret Keys Configuration
-app.config['SECRET_KEY'] = os.environ.get('AUTH_SECRET', 'qrcraft-default-production-key-2026')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///qrcraft.db')
+app.config['SECRET_KEY'] = os.environ.get('AUTH_SECRET', 'qrcraft-ultra-key-2026')
+# SQLite database path fixed for Render
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'qrcraft.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Razorpay Setup with Environment Fallbacks
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_test_TOv6hvuqa6llce')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'dummy_secret')
 
@@ -25,29 +25,24 @@ try:
 except Exception:
     razor_client = None
 
-# Custom Credit Rates & Pricing Packages
 PACKAGES = {
     'p100': {'price': 100, 'credits': 200, 'name': 'Starter Pack (₹100)'},
     'p200': {'price': 200, 'credits': 400, 'name': 'Pro Pack (₹200)'},
     'p1000': {'price': 1000, 'credits': 2000, 'name': 'Ultra Pack (₹1000)'}
 }
 
-QR_COST = 35  # 35 Credits per QR code generation
+QR_COST = 35
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    credits = db.Column(db.Integer, default=200) # 200 Free Credits on Signup
+    credits = db.Column(db.Integer, default=200)
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
-# Initialize Database Context Safely for Production
-with app.app_context():
-    db.create_all()
 
 @app.route('/')
 def index():
@@ -103,63 +98,20 @@ def user_status():
 def generate_qr():
     user = User.query.get(current_user.id)
     if user.credits < QR_COST:
-        return jsonify({'error': 'INSUFFICIENT_CREDITS', 'message': f'Aapke paas kam se kam {QR_COST} credits hone chahiye.'}), 402
+        return jsonify({'error': 'INSUFFICIENT_CREDITS', 'message': f'Kam se kam {QR_COST} credits chahiye.'}), 402
 
     data = request.get_json() or {}
     payload = data.get('payload')
     if not payload:
-        return jsonify({'error': 'URL ya Image link missing hai.'}), 400
+        return jsonify({'error': 'URL missing hai.'}), 400
 
     user.credits -= QR_COST
     db.session.commit()
-
     return jsonify({'success': True, 'remaining_credits': user.credits, 'payload': payload})
 
-@app.route('/api/create-order', methods=['POST'])
-@login_required
-def create_order():
-    data = request.get_json() or {}
-    pkg_key = data.get('package_key')
-
-    if pkg_key not in PACKAGES:
-        return jsonify({'error': 'Invalid Package'}), 400
-
-    pkg = PACKAGES[pkg_key]
-    amount_paise = pkg['price'] * 100
-
-    if not razor_client:
-        return jsonify({'error': 'Razorpay keys system mein properly configured nahi hain.'}), 500
-
-    try:
-        order = razor_client.order.create({
-            'amount': amount_paise,
-            'currency': 'INR',
-            'payment_capture': 1
-        })
-        return jsonify({
-            'order_id': order['id'],
-            'key_id': RAZORPAY_KEY_ID,
-            'amount': amount_paise,
-            'package_name': pkg['name'],
-            'credits': pkg['credits']
-        })
-    except Exception as e:
-        return jsonify({'error': 'Payment Gateway error', 'details': str(e)}), 500
-
-@app.route('/api/verify-payment', methods=['POST'])
-@login_required
-def verify_payment():
-    data = request.get_json() or {}
-    pkg_key = data.get('package_key')
-
-    if pkg_key in PACKAGES:
-        added_credits = PACKAGES[pkg_key]['credits']
-        user = User.query.get(current_user.id)
-        user.credits += added_credits
-        db.session.commit()
-        return jsonify({'success': True, 'new_credits': user.credits})
-
-    return jsonify({'error': 'Verification Failed'}), 400
+# Database creation before server start
+with app.app_context():
+    db.create_all()
 
 if __name__ == '__main__':
     app.run(debug=True)

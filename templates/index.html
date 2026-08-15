@@ -22,21 +22,19 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        /* ANIMATIONS */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes popUp { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px var(--accent-glow); } 50% { box-shadow: 0 0 35px var(--accent-glow); } }
 
-        /* STRICT LOGIN POPUP OVERLAY */
         #authOverlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 7, 11, 0.9); backdrop-filter: blur(20px);
+            background: rgba(5, 7, 11, 0.92); backdrop-filter: blur(20px);
             display: flex; justify-content: center; align-items: center; z-index: 1000;
         }
 
         .auth-card {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 24px; padding: 45px; width: 100%; max-width: 440px;
+            border-radius: 24px; padding: 45px; width: 90%; max-width: 440px;
             box-shadow: 0 25px 50px rgba(0,0,0,0.8); text-align: center;
             animation: popUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -59,14 +57,13 @@
         }
         .btn-glow:hover { transform: translateY(-2px); opacity: 0.95; }
 
-        /* MAIN WEBSITE DASHBOARD */
         #mainApp { display: none; animation: fadeIn 0.6s ease-out; }
 
         .navbar {
             display: flex; justify-content: space-between; align-items: center;
             padding: 20px 50px; background: var(--surface); border-bottom: 1px solid var(--border);
         }
-        .logo { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; }
+        .logo { font-size: 1.4rem; font-weight: 800; }
         .logo span { color: var(--accent); }
 
         .user-pill {
@@ -78,7 +75,6 @@
 
         .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
 
-        /* TAB NAVIGATION (LINK vs PHOTO) */
         .tab-menu { display: flex; gap: 15px; margin-bottom: 25px; }
         .tab-btn {
             background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
@@ -95,11 +91,10 @@
             text-align: center; margin-top: 20px;
         }
 
-        /* PRICING PACKAGES */
         .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
         .price-card {
             background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-            padding: 35px; text-align: left; transition: 0.3s; position: relative;
+            padding: 35px; text-align: left; transition: 0.3s;
         }
         .price-card:hover { border-color: var(--accent); transform: translateY(-5px); }
         .price-title { font-size: 1.1rem; font-weight: 700; color: var(--text-muted); }
@@ -149,7 +144,7 @@
         <main class="container">
             <div class="tab-menu">
                 <button class="tab-btn active" onclick="switchTab('link')" id="tabLinkBtn">🔗 Link QR</button>
-                <button class="tab-btn" onclick="switchTab('photo')" id="tabPhotoBtn">🖼️ Photo / Image QR</button>
+                <button class="tab-btn" onclick="switchTab('photo')" id="tabPhotoBtn">🖼️ Photo QR</button>
             </div>
 
             <div class="workspace-grid">
@@ -255,7 +250,7 @@
             if (res.ok) {
                 checkUserStatus();
             } else {
-                alert(data.error || 'Authentication Failed');
+                alert(data.error || 'Auth Failed');
             }
         }
 
@@ -302,37 +297,44 @@
         }
 
         async function buyPack(pkgKey) {
-            let res = await fetch('/api/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ package_key: pkgKey })
-            });
+            try {
+                let res = await fetch('/api/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ package_key: pkgKey })
+                });
 
-            let order = await res.json();
-            if (!res.ok) return alert(order.error || 'Order fail ho gaya');
-
-            let options = {
-                "key": order.key_id,
-                "amount": order.amount,
-                "currency": "INR",
-                "name": "QRCraft Pro",
-                "description": `Buy ${order.package_name}`,
-                "order_id": order.order_id,
-                "handler": async function (response) {
-                    let verifyRes = await fetch('/api/verify-payment', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ package_key: pkgKey })
-                    });
-                    let verifyData = await verifyRes.json();
-                    if(verifyRes.ok) {
-                        alert(`🎉 Payment Successful! Naye Credits Add ho gaye.`);
-                        checkUserStatus();
-                    }
+                let order = await res.json();
+                if (!res.ok) {
+                    return alert(order.error || order.details || 'Order create nahi ho saka');
                 }
-            };
-            let rzp = new Razorpay(options);
-            rzp.open();
+
+                let options = {
+                    "key": order.key_id,
+                    "amount": order.amount,
+                    "currency": "INR",
+                    "name": "QRCraft Pro",
+                    "description": `Buy ${order.package_name}`,
+                    "order_id": order.order_id,
+                    "handler": async function (response) {
+                        let verifyRes = await fetch('/api/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ package_key: pkgKey })
+                        });
+                        let verifyData = await verifyRes.json();
+                        if(verifyRes.ok) {
+                            alert('🎉 Payment Successful! Naye credits add ho gaye hain.');
+                            checkUserStatus();
+                        }
+                    }
+                };
+
+                let rzp = new Razorpay(options);
+                rzp.open();
+            } catch(e) {
+                alert("Payment gateway connection error.");
+            }
         }
     </script>
 </body>

@@ -1,341 +1,54 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QRCraft Pro Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1786563700495703" crossorigin="anonymous"></script>
-    <style>
-        :root {
-            --bg: #05070B;
-            --surface: #0D121D;
-            --card: #151C2C;
-            --accent: #38BDF8;
-            --accent-glow: rgba(56, 189, 248, 0.35);
-            --text: #F8FAFC;
-            --text-muted: #94A3B8;
-            --border: rgba(255, 255, 255, 0.08);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes popUp { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-        @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px var(--accent-glow); } 50% { box-shadow: 0 0 35px var(--accent-glow); } }
-
-        #authOverlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 7, 11, 0.92); backdrop-filter: blur(20px);
-            display: flex; justify-content: center; align-items: center; z-index: 1000;
-        }
-
-        .auth-card {
-            background: var(--surface); border: 1px solid var(--border);
-            border-radius: 24px; padding: 45px; width: 90%; max-width: 440px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.8); text-align: center;
-            animation: popUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .auth-card h2 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; }
-        .auth-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 30px; }
-
-        .form-group { text-align: left; margin-bottom: 18px; }
-        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
-        .input-box {
-            width: 100%; padding: 14px 18px; background: #000; border: 1px solid var(--border);
-            border-radius: 12px; color: #fff; font-size: 0.95rem; outline: none; transition: 0.3s;
-        }
-        .input-box:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-
-        .btn-glow {
-            width: 100%; padding: 15px; background: var(--accent); color: #000; font-weight: 800;
-            border: none; border-radius: 12px; font-size: 1rem; cursor: pointer;
-            transition: 0.3s; margin-top: 10px; animation: pulseGlow 3s infinite;
-        }
-        .btn-glow:hover { transform: translateY(-2px); opacity: 0.95; }
-
-        #mainApp { display: none; animation: fadeIn 0.6s ease-out; }
-
-        .navbar {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 50px; background: var(--surface); border-bottom: 1px solid var(--border);
-        }
-        .logo { font-size: 1.4rem; font-weight: 800; }
-        .logo span { color: var(--accent); }
-
-        .user-pill {
-            display: flex; align-items: center; gap: 15px;
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-            padding: 8px 20px; border-radius: 40px;
-        }
-        .credit-badge { background: rgba(56, 189, 248, 0.15); color: var(--accent); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.9rem; }
-
-        .container { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
-
-        .tab-menu { display: flex; gap: 15px; margin-bottom: 25px; }
-        .tab-btn {
-            background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
-            padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
-        }
-        .tab-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
-
-        .workspace-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; margin-bottom: 60px; }
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 35px; }
-
-        .preview-box {
-            background: #000; border: 2px dashed var(--border); min-height: 280px;
-            border-radius: 16px; display: flex; justify-content: center; align-items: center;
-            text-align: center; margin-top: 20px;
-        }
-
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-top: 30px; }
-        .price-card {
-            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
-            padding: 35px; text-align: left; transition: 0.3s;
-        }
-        .price-card:hover { border-color: var(--accent); transform: translateY(-5px); }
-        .price-title { font-size: 1.1rem; font-weight: 700; color: var(--text-muted); }
-        .price-amount { font-size: 2.5rem; font-weight: 800; margin: 12px 0; }
-        .price-amount span { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <meta name="description" content="QRCraft Pro — create clean, scannable QR codes from secure web URLs.">
+  <title>QRCraft Pro · QR Code Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    :root{--bg:#06101d;--glass:rgba(18,31,51,.68);--glass2:rgba(255,255,255,.055);--line:rgba(255,255,255,.12);--text:#f4f8ff;--muted:#9db0c6;--cyan:#6ee7ff;--blue:#4f8cff;--good:#4ade80;--danger:#fb7185;--shadow:0 30px 100px rgba(0,0,0,.38)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 15% 10%,rgba(79,140,255,.18),transparent 28%),radial-gradient(circle at 85% 15%,rgba(110,231,255,.12),transparent 26%),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh}button,input{font:inherit}.orb{position:fixed;width:340px;height:340px;border-radius:50%;filter:blur(90px);opacity:.16;pointer-events:none;background:#4f8cff;top:55%;left:-150px}.orb2{position:fixed;width:300px;height:300px;border-radius:50%;filter:blur(100px);opacity:.12;pointer-events:none;background:#6ee7ff;right:-130px;top:30%}
+    .topbar{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);background:rgba(6,16,29,.72);backdrop-filter:blur(22px)}.nav{width:min(1180px,92%);margin:auto;display:flex;align-items:center;justify-content:space-between;padding:16px 0}.brand{font-size:1.2rem;font-weight:800;letter-spacing:-.03em}.brand span{color:var(--cyan)}.navlinks{display:flex;gap:18px;align-items:center}.navlinks a{color:var(--muted);text-decoration:none;font-size:.9rem}.navlinks a:hover{color:#fff}.user{display:none;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:var(--glass2)}.credits{color:#08121f;background:linear-gradient(135deg,var(--cyan),#a7f3d0);padding:5px 9px;border-radius:999px;font-weight:800;font-size:.78rem}.logout{border:0;background:transparent;color:var(--danger);cursor:pointer;font-weight:700}
+    .wrap{width:min(1180px,92%);margin:auto}.hero{padding:76px 0 34px;text-align:center}.eyebrow{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid rgba(110,231,255,.2);background:rgba(110,231,255,.06);border-radius:999px;color:var(--cyan);font-size:.8rem;font-weight:700}.hero h1{font-size:clamp(2.5rem,7vw,5.6rem);line-height:.98;letter-spacing:-.065em;margin:20px auto 18px;max-width:900px}.gradient{background:linear-gradient(90deg,#fff,var(--cyan),#8db4ff);-webkit-background-clip:text;background-clip:text;color:transparent}.hero p{max-width:720px;margin:auto;color:var(--muted);font-size:1.05rem;line-height:1.75}.trust{margin-top:24px;color:#8fa4ba;font-size:.82rem}
+    .app{display:none;padding:24px 0 80px}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:22px}.card{border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(24px);border-radius:28px;box-shadow:var(--shadow);padding:28px}.card h2{margin:0 0 8px;font-size:1.25rem}.sub{color:var(--muted);font-size:.88rem;line-height:1.6;margin:0 0 22px}.tabs{display:flex;gap:8px;margin-bottom:20px}.tab{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--muted);border-radius:14px;padding:11px;cursor:pointer;font-weight:700}.tab.active{color:#06101d;background:linear-gradient(135deg,var(--cyan),#8db4ff);border-color:transparent}.field{margin:14px 0}.field label{display:block;color:#c9d6e6;font-size:.78rem;font-weight:700;margin-bottom:8px}.input{width:100%;border:1px solid var(--line);background:rgba(0,0,0,.2);color:#fff;border-radius:14px;padding:14px 15px;outline:none}.input:focus{border-color:rgba(110,231,255,.75);box-shadow:0 0 0 4px rgba(110,231,255,.08)}.primary{width:100%;border:0;border-radius:15px;padding:14px 16px;background:linear-gradient(135deg,var(--cyan),#8db4ff);color:#07101b;font-weight:800;cursor:pointer;box-shadow:0 12px 35px rgba(79,140,255,.22)}.primary:disabled{opacity:.55;cursor:not-allowed}.preview{min-height:380px;display:grid;place-items:center;border:1px dashed rgba(255,255,255,.16);border-radius:22px;background:rgba(0,0,0,.18);padding:25px}.preview img{width:min(320px,100%);background:#fff;padding:18px;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.4)}.empty{text-align:center;color:var(--muted);line-height:1.7}.download{display:none;margin-top:16px;text-align:center}.download a{display:inline-block;color:#06101b;background:#fff;text-decoration:none;padding:11px 16px;border-radius:12px;font-weight:800}.status{min-height:22px;margin-top:12px;font-size:.84rem}.error{color:var(--danger)}.success{color:var(--good)}
+    .pricing{padding:20px 0 75px}.section-title{text-align:center;margin-bottom:26px}.section-title h2{font-size:2rem;margin:0 0 8px;letter-spacing:-.04em}.section-title p{color:var(--muted);margin:0}.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.plan{padding:25px;border:1px solid var(--line);border-radius:24px;background:var(--glass);backdrop-filter:blur(20px)}.plan.featured{border-color:rgba(110,231,255,.55);box-shadow:0 0 50px rgba(110,231,255,.08)}.plan h3{margin:0;color:#c6d5e6}.price{font-size:2.4rem;font-weight:800;margin:12px 0}.price small{font-size:.85rem;color:var(--muted);font-weight:500}.plan p{color:var(--muted);font-size:.86rem;line-height:1.6;min-height:44px}.plan button{margin-top:10px}
+    .content{padding:15px 0 90px}.content-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.info{padding:24px;border:1px solid var(--line);background:rgba(18,31,51,.52);border-radius:22px}.info h3{margin:0 0 10px}.info p{color:var(--muted);line-height:1.75;font-size:.9rem}.info a{color:var(--cyan)}footer{border-top:1px solid var(--line);padding:28px 0;color:#71849a;font-size:.82rem}footer a{color:#9db0c6;text-decoration:none;margin-left:12px}
+    #auth{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(2,8,16,.78);backdrop-filter:blur(25px)}.authbox{width:min(430px,100%);border:1px solid var(--line);background:rgba(15,27,46,.88);border-radius:28px;padding:30px;box-shadow:var(--shadow)}.authbox h2{font-size:1.7rem;margin:0 0 7px}.authbox p{color:var(--muted);font-size:.88rem;line-height:1.6}.authswitch{background:none;border:0;color:var(--cyan);cursor:pointer;font-weight:700;margin-top:15px}.hidden{display:none!important}
+    @media(max-width:850px){.grid,.plans,.content-grid{grid-template-columns:1fr}.navlinks{display:none}.hero{padding-top:50px}.preview{min-height:300px}.card{padding:20px}}
+  </style>
 </head>
 <body>
-
-    <div id="authOverlay">
-        <div class="auth-card">
-            <h2 id="authTitle">QRCraft Studio</h2>
-            <p id="authSub">Login to get <b>200 Free Credits</b></p>
-
-            <form onsubmit="handleAuth(event)">
-                <div class="form-group" id="nameGroup" style="display: none;">
-                    <label>Full Name</label>
-                    <input type="text" id="authName" class="input-box" placeholder="Aapka Naam">
-                </div>
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" id="authEmail" class="input-box" placeholder="name@domain.com" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="authPassword" class="input-box" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn-glow" id="authBtn">Sign In</button>
-            </form>
-
-            <p style="margin-top: 25px; font-size: 0.85rem; color: var(--accent); cursor: pointer;" onclick="toggleAuthMode()" id="authToggle">
-                Don't have an account? Sign Up (200 Free Credits)
-            </p>
-        </div>
-    </div>
-
-    <div id="mainApp">
-        <nav class="navbar">
-            <div class="logo">QRCraft <span>Pro</span></div>
-            <div class="user-pill">
-                <span id="userNameDisplay">...</span>
-                <span class="credit-badge">⚡ <span id="userCreditDisplay">0</span> Credits</span>
-                <button onclick="logout()" style="background:none; border:none; color:#ef4444; font-weight:700; cursor:pointer; margin-left:10px;">Logout</button>
-            </div>
-        </nav>
-
-        <main class="container">
-            <div class="tab-menu">
-                <button class="tab-btn active" onclick="switchTab('link')" id="tabLinkBtn">🔗 Link QR</button>
-                <button class="tab-btn" onclick="switchTab('photo')" id="tabPhotoBtn">🖼️ Photo QR</button>
-            </div>
-
-            <div class="workspace-grid">
-                <div class="card">
-                    <h3 id="formHeading">Enter Website Link</h3>
-                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Har QR code generation par 35 credits kaatenge.</p>
-
-                    <div class="form-group" id="linkGroup">
-                        <label>Destination URL</label>
-                        <input type="text" id="qrPayload" class="input-box" placeholder="https://yourwebsite.com">
-                    </div>
-
-                    <div class="form-group" id="photoGroup" style="display: none;">
-                        <label>Image Direct Link / URL</label>
-                        <input type="text" id="photoPayload" class="input-box" placeholder="https://i.imgur.com/your-image.jpg">
-                    </div>
-
-                    <button class="btn-glow" onclick="generateQR()">Generate QR Code (35 Credits)</button>
-                </div>
-
-                <div class="card">
-                    <h3>Live QR Preview</h3>
-                    <div class="preview-box" id="previewBox">
-                        <p style="color: var(--text-muted); font-size: 0.85rem;">Generated QR code yahan dikhega.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 50px;">
-                <h2>Recharge Credit Packs</h2>
-                <p style="color: var(--text-muted); margin-top: 6px;">Credits khatam hone par niche se top-up karein:</p>
-
-                <div class="pricing-grid">
-                    <div class="price-card">
-                        <div class="price-title">Starter Plan</div>
-                        <div class="price-amount">₹100 <span>/ 200 Credits</span></div>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">~5 High Quality QR Codes</p>
-                        <button class="btn-glow" onclick="buyPack('p100')">Buy ₹100</button>
-                    </div>
-
-                    <div class="price-card" style="border-color: var(--accent);">
-                        <div class="price-title">Pro Plan</div>
-                        <div class="price-amount">₹200 <span>/ 400 Credits</span></div>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">~11 High Quality QR Codes</p>
-                        <button class="btn-glow" onclick="buyPack('p200')">Buy ₹200</button>
-                    </div>
-
-                    <div class="price-card">
-                        <div class="price-title">Ultra Pack</div>
-                        <div class="price-amount">₹1,000 <span>/ 2,000 Credits</span></div>
-                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">~57 High Quality QR Codes</p>
-                        <button class="btn-glow" onclick="buyPack('p1000')">Buy ₹1,000</button>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        let isSignup = false;
-        let activeTab = 'link';
-
-        async function checkUserStatus() {
-            let res = await fetch('/api/user-status');
-            let data = await res.json();
-            if (data.logged_in) {
-                document.getElementById('authOverlay').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('userNameDisplay').innerText = data.name;
-                document.getElementById('userCreditDisplay').innerText = data.credits;
-            } else {
-                document.getElementById('authOverlay').style.display = 'flex';
-                document.getElementById('mainApp').style.display = 'none';
-            }
-        }
-        checkUserStatus();
-
-        function toggleAuthMode() {
-            isSignup = !isSignup;
-            document.getElementById('authTitle').innerText = isSignup ? 'Create Account' : 'QRCraft Studio';
-            document.getElementById('authSub').innerText = isSignup ? 'Sign Up and get 200 Free Credits' : 'Login to get 200 Free Credits';
-            document.getElementById('nameGroup').style.display = isSignup ? 'block' : 'none';
-            document.getElementById('authBtn').innerText = isSignup ? 'Create Account' : 'Sign In';
-            document.getElementById('authToggle').innerText = isSignup ? 'Already have an account? Sign In' : "Don't have an account? Sign Up (200 Free Credits)";
-        }
-
-        async function handleAuth(e) {
-            e.preventDefault();
-            let url = isSignup ? '/api/signup' : '/api/login';
-            let body = {
-                email: document.getElementById('authEmail').value,
-                password: document.getElementById('authPassword').value,
-                name: document.getElementById('authName').value
-            };
-
-            let res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-
-            let data = await res.json();
-            if (res.ok) {
-                checkUserStatus();
-            } else {
-                alert(data.error || 'Auth Failed');
-            }
-        }
-
-        async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
-            checkUserStatus();
-        }
-
-        function switchTab(tab) {
-            activeTab = tab;
-            if(tab === 'link') {
-                document.getElementById('tabLinkBtn').classList.add('active');
-                document.getElementById('tabPhotoBtn').classList.remove('active');
-                document.getElementById('linkGroup').style.display = 'block';
-                document.getElementById('photoGroup').style.display = 'none';
-                document.getElementById('formHeading').innerText = 'Enter Website Link';
-            } else {
-                document.getElementById('tabPhotoBtn').classList.add('active');
-                document.getElementById('tabLinkBtn').classList.remove('active');
-                document.getElementById('linkGroup').style.display = 'none';
-                document.getElementById('photoGroup').style.display = 'block';
-                document.getElementById('formHeading').innerText = 'Enter Photo / Image URL';
-            }
-        }
-
-        async function generateQR() {
-            let payload = activeTab === 'link' ? document.getElementById('qrPayload').value : document.getElementById('photoPayload').value;
-            if(!payload) return alert('Kripya Link ya Photo URL daalein!');
-
-            let res = await fetch('/api/generate-qr', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ payload: payload })
-            });
-
-            let data = await res.json();
-            if (res.ok) {
-                document.getElementById('userCreditDisplay').innerText = data.remaining_credits;
-                let qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(payload)}`;
-                document.getElementById('previewBox').innerHTML = `<img src="${qrImgUrl}" alt="Generated QR" style="border-radius:12px; box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);">`;
-            } else {
-                alert(data.message || data.error);
-            }
-        }
-
-        async function buyPack(pkgKey) {
-            try {
-                let res = await fetch('/api/create-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ package_key: pkgKey })
-                });
-
-                let order = await res.json();
-                if (!res.ok) {
-                    return alert(order.error || order.details || 'Order create nahi ho saka');
-                }
-
-                let options = {
-                    "key": order.key_id,
-                    "amount": order.amount,
-                    "currency": "INR",
-                    "name": "QRCraft Pro",
-                    "description": `Buy ${order.package_name}`,
-                    "order_id": order.order_id,
-                    "handler": async function (response) {
-                        let verifyRes = await fetch('/api/verify-payment', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ package_key: pkgKey })
-                        });
-                        let verifyData = await verifyRes.json();
-                        if(verifyRes.ok) {
-                            alert('🎉 Payment Successful! Naye credits add ho gaye hain.');
-                            checkUserStatus();
-                        }
-                    }
-                };
-
-                let rzp = new Razorpay(options);
-                rzp.open();
-            } catch(e) {
-                alert("Payment gateway connection error.");
-            }
-        }
-    </script>
-</body>
-</html>
+<div class="orb"></div><div class="orb2"></div>
+<header class="topbar"><nav class="nav"><a class="brand" href="/" style="text-decoration:none;color:#fff">QR<span>Craft</span> Pro</a><div class="navlinks"><a href="#how">How it works</a><a href="#plans">Plans</a><a href="/guide">Guide</a><a href="/privacy">Privacy</a></div><div id="user" class="user"><span id="username"></span><span class="credits">⚡ <span id="credit">0</span></span><button class="logout" onclick="logout()">Logout</button></div></nav></header>
+<main class="wrap">
+<section class="hero"><span class="eyebrow">✦ Secure QR Code Studio</span><h1>Turn a link into a <span class="gradient">perfect QR code.</span></h1><p>Create crisp, downloadable QR codes with a fast glassmorphism workspace. Your payment credentials stay with Razorpay and are never entered into QRCraft.</p><div class="trust">HTTPS-only destinations · Server-side QR generation · Verified payments</div></section>
+<section id="workspace" class="app">
+<div class="grid">
+<div class="card"><h2>Create QR Code</h2><p class="sub">Enter a website URL. Every successful generation uses 35 credits.</p><div class="tabs"><button class="tab active" id="linkTab" onclick="setMode('link')">🔗 Website</button><button class="tab" id="textTab" onclick="setMode('text')">Aa Text</button></div><div class="field"><label id="payloadLabel">Destination URL</label><input id="payload" class="input" maxlength="2048" placeholder="https://example.com" autocomplete="url"></div><button id="generate" class="primary" onclick="generateQR()">Generate secure QR · 35 credits</button><div id="status" class="status"></div></div>
+<div class="card"><h2>Live Preview</h2><p class="sub">High-resolution PNG output with standard quiet-zone spacing.</p><div id="preview" class="preview"><div class="empty">Your QR preview will appear here.<br>Make sure the destination is correct before sharing it.</div></div><div id="download" class="download"><a id="downloadLink" download="qrcraft-qr.png">↓ Download PNG</a></div></div>
+</div></section>
+<section id="plans" class="pricing"><div class="section-title"><h2>Simple credit packs</h2><p>Secure Razorpay checkout · No card or UPI details are stored by QRCraft.</p></div><div class="plans"><article class="plan"><h3>Starter</h3><div class="price">₹100 <small>/ 200 credits</small></div><p>For occasional QR creation and small projects.</p><button class="primary" onclick="buyPack('p100')">Buy Starter</button></article><article class="plan featured"><h3>Pro · Popular</h3><div class="price">₹200 <small>/ 400 credits</small></div><p>More credits for creators, portfolios and small businesses.</p><button class="primary" onclick="buyPack('p200')">Buy Pro</button></article><article class="plan"><h3>Ultra</h3><div class="price">₹1,000 <small>/ 2,000 credits</small></div><p>Large-volume QR generation at a lower per-credit price.</p><button class="primary" onclick="buyPack('p1000')">Buy Ultra</button></article></div></section>
+<section id="how" class="content"><div class="section-title"><h2>Useful QR knowledge</h2><p>Built to be a tool, not an empty ad screen.</p></div><div class="content-grid"><article class="info"><h3>What is a QR code?</h3><p>A QR code is a machine-readable pattern that stores information. When scanned, it can open a website, display text or trigger another supported action.</p></article><article class="info"><h3>How to make one</h3><p>Paste the correct destination, generate the code, download the PNG and test it with your phone camera before printing or publishing it.</p></article><article class="info"><h3>Make it scannable</h3><p>Keep strong contrast, leave clear space around the code and avoid covering its corners. Always test the final image at the size where people will scan it.</p></article><article class="info"><h3>Security first</h3><p>QRCraft accepts only HTTP/HTTPS links for website QR generation. Authentication uses hashed passwords, rate limits and secure session cookies.</p></article><article class="info"><h3>Payments</h3><p>QRCraft creates the order on the server and verifies the Razorpay signature before adding credits. A client-side “success” message alone can never grant credits.</p></article><article class="info"><h3>Need more details?</h3><p>Read the <a href="/guide">QR guide</a>, <a href="/privacy">privacy policy</a> and <a href="/terms">terms</a> before using the service.</p></article></div></section>
+</main>
+<footer><div class="wrap">© 2026 QRCraft Pro <a href="/about">About</a><a href="/guide">Guide</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></div></footer>
+<div id="auth"><div class="authbox"><h2 id="authTitle">Welcome to QRCraft</h2><p id="authSub">Create an account to receive 500 free credits and start generating QR codes.</p><form onsubmit="auth(event)"><div id="nameField" class="field hidden"><label>Full name</label><input id="name" class="input" maxlength="80" autocomplete="name"></div><div class="field"><label>Email</label><input id="email" class="input" type="email" maxlength="120" required autocomplete="email"></div><div class="field"><label>Password</label><input id="password" class="input" type="password" minlength="10" maxlength="128" required autocomplete="current-password"></div><button class="primary" id="authBtn">Sign in</button></form><button class="authswitch" id="authSwitch" onclick="toggleAuth()">New here? Create an account</button><div id="authStatus" class="status"></div></div></div>
+<script>
+const csrf=document.querySelector('meta[name="csrf-token"]').content;let signup=false,mode='link';
+const $=id=>document.getElementById(id);const headers={'Content-Type':'application/json','X-CSRFToken':csrf};
+function setStatus(id,msg,type=''){ $(id).textContent=msg;$(id).className='status '+type; }
+async function api(url,options={}){options.headers={...(options.headers||{}),'X-CSRFToken':csrf};return fetch(url,options)}
+async function check(){try{const r=await fetch('/api/user-status');const d=await r.json();if(d.logged_in){$('auth').classList.add('hidden');$('workspace').style.display='block';$('user').style.display='flex';$('username').textContent=d.name;$('credit').textContent=d.credits}else{$('auth').classList.remove('hidden');$('workspace').style.display='none';$('user').style.display='none'}}catch(e){setStatus('authStatus','Connection error. Please refresh.','error')}}
+function toggleAuth(){signup=!signup;$('nameField').classList.toggle('hidden',!signup);$('authTitle').textContent=signup?'Create your QRCraft account':'Welcome to QRCraft';$('authSub').textContent=signup?'Get 500 free credits. Use a strong unique password.':'Sign in to access your QR workspace.';$('authBtn').textContent=signup?'Create account':'Sign in';$('authSwitch').textContent=signup?'Already have an account? Sign in':'New here? Create an account';$('password').autocomplete=signup?'new-password':'current-password'}
+async function auth(e){e.preventDefault();setStatus('authStatus','');const body={email:$('email').value.trim(),password:$('password').value};if(signup)body.name=$('name').value.trim();try{const r=await api(signup?'/api/signup':'/api/login',{method:'POST',headers,body:JSON.stringify(body)});const d=await r.json();if(!r.ok){setStatus('authStatus',d.error||'Authentication failed.','error');return}await check()}catch(e){setStatus('authStatus','Network error. Try again.','error')}}
+async function logout(){await api('/api/logout',{method:'POST'});location.reload()}
+function setMode(next){mode=next;$('linkTab').classList.toggle('active',mode==='link');$('textTab').classList.toggle('active',mode==='text');$('payloadLabel').textContent=mode==='link'?'Destination URL':'Text to encode';$('payload').placeholder=mode==='link'?'https://example.com':'Enter a short message'}
+async function generateQR(){const payload=$('payload').value.trim();if(!payload){setStatus('status','Enter something first.','error');return}if(mode==='link'&&!/^https?:\/\/[^\s]+$/i.test(payload)){setStatus('status','Use a valid http:// or https:// URL.','error');return}const btn=$('generate');btn.disabled=true;setStatus('status','Generating…');try{const r=await api('/api/generate-qr',{method:'POST',headers,body:JSON.stringify({payload})});const d=await r.json();if(!r.ok){setStatus('status',d.message||d.error||'Could not generate QR.','error');return}$('preview').innerHTML='<img alt="Generated QR code" src="'+d.qr_data+'">';$('downloadLink').href=d.qr_data;$('download').style.display='block';$('credit').textContent=d.remaining_credits;setStatus('status','QR generated successfully.','success')}catch(e){setStatus('status','Network error. Try again.','error')}finally{btn.disabled=false}}
+async function buyPack(key){try{const r=await api('/api/create-order',{method:'POST',headers,body:JSON.stringify({package_key:key})});const d=await r.json();if(!r.ok){alert(d.error||'Payment is unavailable.');return}const options={key:d.key_id,amount:d.amount,currency:'INR',name:'QRCraft Pro',description:d.package_name,order_id:d.order_id,theme:{color:'#6ee7ff'},handler:async function(response){const verify=await api('/api/verify-payment',{method:'POST',headers,body:JSON.stringify(response)});const out=await verify.json();if(verify.ok){$('credit').textContent=out.new_credits;alert('Payment verified. Credits added successfully.')}else alert(out.error||'Payment verification failed.')}};const rzp=new Razorpay(options);rzp.on('payment.failed',()=>alert('Payment failed or was cancelled. No credits were added.'));rzp.open()}catch(e){alert('Could not start checkout. Please try again.')}}
+check();
+</script>
+</body></html>

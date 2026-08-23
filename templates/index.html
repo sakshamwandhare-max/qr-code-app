@@ -3,193 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Search Console Verification Meta -->
     <meta name="google-site-verification" content="YOUR_SEARCH_CONSOLE_CODE" />
-    <title>QRCraft - Welcome</title>
+    <title>QRCraft Pro Studio</title>
 
-    <!-- AdSense Code -->
+    <!-- AdSense Script -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1786563700495703" crossorigin="anonymous"></script>
 
+    <!-- High-Speed Client-Side QR Generator JS (No Server Lag) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Razorpay Checkout JS -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: #e5e5e5; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 
-        body {
-            background-color: #e5e5e5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* Neo-Brutalist Card Container */
         .card {
             background-color: #a2d2e2;
-            border: 3px solid #000000;
-            box-shadow: 6px 6px 0px #000000;
+            border: 3px solid #000;
+            box-shadow: 6px 6px 0px #000;
             border-radius: 8px;
-            width: 340px;
-            padding: 32px 24px;
+            width: 360px;
+            padding: 28px 24px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 18px;
         }
 
-        .header h1 {
-            font-size: 26px;
-            font-weight: 800;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-        }
+        .header h1 { font-size: 24px; font-weight: 800; color: #1a1a1a; }
+        .header p { font-size: 14px; font-weight: 600; color: #555; }
 
-        .header p {
-            font-size: 16px;
-            font-weight: 600;
-            color: #666666;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 12px; }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        /* Neo-Brutalist Input Fields */
         .input-field {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px 14px;
             background-color: #fefae0;
-            border: 2.5px solid #000000;
+            border: 2.5px solid #000;
             border-radius: 8px;
-            box-shadow: 3px 3px 0px #000000;
-            font-size: 15px;
+            box-shadow: 3px 3px 0px #000;
+            font-size: 14px;
             font-weight: 700;
-            color: #333333;
             outline: none;
-            transition: all 0.1s ease;
         }
 
-        .input-field::placeholder {
-            color: #999999;
-            font-weight: 600;
-        }
-
-        .input-field:focus {
-            transform: translate(-1px, -1px);
-            box-shadow: 4px 4px 0px #000000;
-        }
-
-        /* Social Icons Section */
-        .social-buttons {
-            display: flex;
-            gap: 16px;
-            margin-top: 4px;
-        }
-
-        .social-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
+        .btn-main {
             background-color: #fefae0;
-            border: 2.5px solid #000000;
-            box-shadow: 3px 3px 0px #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.1s ease;
-            user-select: none;
-        }
-
-        .social-btn:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0px #000000;
-        }
-
-        .social-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #000000;
-        }
-
-        /* Submit Button */
-        .submit-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .submit-btn {
-            background-color: #fefae0;
-            border: 2.5px solid #000000;
-            box-shadow: 4px 4px 0px #000000;
+            border: 2.5px solid #000;
+            box-shadow: 4px 4px 0px #000;
             border-radius: 8px;
-            padding: 10px 24px;
-            font-size: 16px;
-            font-weight: 700;
-            color: #000000;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 800;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
             transition: all 0.1s ease;
         }
 
-        .submit-btn:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 6px 6px 0px #000000;
-        }
+        .btn-main:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
 
-        .submit-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #000000;
-        }
+        #qr-result { display: flex; justify-content: center; margin-top: 15px; }
+
+        .legal-footer { margin-top: 25px; text-align: center; font-size: 12px; font-weight: 700; }
+        .legal-footer a { color: #000; text-decoration: underline; margin: 0 6px; }
     </style>
 </head>
 <body>
 
     <div class="card">
+        {% if not user %}
+        <!-- AUTH CONTAINER -->
         <div class="header">
             <h1>Welcome,</h1>
-            <p>sign up to continue</p>
+            <p>Sign up or Login to generate QR codes</p>
         </div>
 
-        <form id="authForm" class="form-group" onsubmit="handleAuth(event)">
+        <div class="form-group">
             <input type="email" id="email" class="input-field" placeholder="Email" required />
             <input type="password" id="password" class="input-field" placeholder="Password" required />
-
-            <div class="social-buttons">
-                <div class="social-btn" onclick="socialLogin('twitter')">t</div>
-                <div class="social-btn" onclick="socialLogin('google')">G</div>
-                <div class="social-btn" onclick="socialLogin('facebook')">f</div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-main" onclick="handleAuth('/signup')" style="flex:1;">Sign Up</button>
+                <button class="btn-main" onclick="handleAuth('/login')" style="flex:1;">Login</button>
             </div>
+        </div>
 
-            <div class="submit-container">
-                <button type="submit" class="submit-btn">
-                    Let's go &rarr;
-                </button>
-            </div>
-        </form>
+        {% else %}
+        <!-- QR GENERATOR CONTAINER -->
+        <div class="header">
+            <h1>QRCraft Studio</h1>
+            <p>Credits: <strong id="credits">{{ credits }}</strong> | User: {{ user }}</p>
+        </div>
+
+        <div class="form-group">
+            <input type="text" id="qrText" class="input-field" placeholder="Enter URL or Text" />
+            <button class="btn-main" onclick="generateQR()">Generate QR &rarr;</button>
+            <button class="btn-main" onclick="buyCredits()" style="background-color: #b5e2fa;">+ Add 500 Credits (₹99)</button>
+        </div>
+
+        <div id="qr-result"></div>
+
+        <a href="/logout" style="text-align: center; font-size: 12px; font-weight: bold; color: red;">Logout</a>
+        {% endif %}
+    </div>
+
+    <!-- LEGAL COMPLIANCE FOOTER (Zero Fine Protection) -->
+    <div class="legal-footer">
+        <a href="/terms">Terms</a> | 
+        <a href="/privacy">Privacy Policy</a> | 
+        <a href="/refund">Refund Policy</a> | 
+        <a href="/contact">Contact Us</a>
     </div>
 
     <script>
-        function handleAuth(event) {
-            event.preventDefault();
+        // Auth Logic
+        async function handleAuth(url) {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            // Form Submit Logic
-            alert("Logging in with Email: " + email);
-            // Redirection ya backend API call yahan karein:
-            // window.location.href = "/dashboard";
+            if(!email || !password) return alert("Please fill all fields!");
+
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+            alert(data.message);
+            if(data.status === 'success') window.location.reload();
         }
 
-        function socialLogin(provider) {
-            alert("Login with " + provider + " clicked!");
+        // Fast Client-Side QR Generation (Zero Network Buffering)
+        function generateQR() {
+            const qrText = document.getElementById('qrText').value;
+            const qrContainer = document.getElementById('qr-result');
+            
+            if(!qrText) return alert("Enter text or URL!");
+            
+            qrContainer.innerHTML = "";
+            new QRCode(qrContainer, {
+                text: qrText,
+                width: 160,
+                height: 160
+            });
+        }
+
+        // Easy Low-Risk Razorpay Payment
+        function buyCredits() {
+            var options = {
+                "key": "YOUR_RAZORPAY_TEST_OR_LIVE_KEY", 
+                "amount": "9900", // ₹99 in paise
+                "currency": "INR",
+                "name": "QRCraft Studio",
+                "description": "500 Credits Top-Up",
+                "handler": function (response){
+                    alert("Payment Success! Payment ID: " + response.razorpay_payment_id);
+                },
+                "theme": { "color": "#a2d2e2" }
+            };
+            var rzp = new Razorpay(options);
+            rzp.open();
         }
     </script>
 </body>

@@ -1,4 +1,4 @@
-const CACHE = 'qrcraft-v1';
+const CACHE = 'qrcraft-v2';
 const APP_SHELL = [
   '/',
   '/manifest.webmanifest',

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, jsonify, abort, make_response, render_template_string
+from flask import Flask, render_template, request, send_file, jsonify, abort, make_response
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 import base64
@@ -62,6 +62,11 @@ def terms():
 @app.get("/privacy")
 def privacy():
     return render_template("privacy.html")
+
+
+@app.get("/sw.js")
+def service_worker():
+    return send_file("static/sw.js", mimetype="application/javascript", max_age=0)
 
 
 @app.post("/api/photo")

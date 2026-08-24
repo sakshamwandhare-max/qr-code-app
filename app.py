@@ -59,7 +59,7 @@ def inject_site_config():
 
 @app.get("/")
 def home():
-    return render_template("mobile_v2.html")
+    return render_template("mobile_v3.html")
 
 
 @app.get("/terms")

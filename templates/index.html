@@ -1,214 +1,545 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="YOUR_SEARCH_CONSOLE_CODE" />
-    <title>QRCraft Pro Studio - Free Custom QR Code Generator</title>
 
-    <!-- Google AdSense Script -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1786563700495703" crossorigin="anonymous"></script>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    >
 
-    <!-- High-Speed Client-Side QR Generator JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- Razorpay Checkout JS -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <meta
+        name="description"
+        content="Create QR codes instantly for free."
+    >
+
+    <title>QRCraft — Free QR Code Generator</title>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
-        body { background-color: #e5e5e5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px 10px; }
 
-        .card {
-            background-color: #a2d2e2;
-            border: 3.5px solid #000;
-            box-shadow: 6px 6px 0px #000;
-            border-radius: 10px;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #080808;
+            color: #ffffff;
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
             width: 100%;
-            max-width: 380px;
-            padding: 30px 24px;
+            padding: 18px 16px;
+        }
+
+        .navbar {
+            max-width: 1000px;
+            margin: auto;
+
             display: flex;
-            flex-direction: column;
-            gap: 18px;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .header h1 { font-size: 26px; font-weight: 800; color: #1a1a1a; }
-        .header p { font-size: 14px; font-weight: 600; color: #444; margin-top: 2px; }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
 
-        .form-group { display: flex; flex-direction: column; gap: 14px; }
-
-        .input-field {
-            width: 100%;
-            padding: 12px 14px;
-            background-color: #fefae0;
-            border: 2.5px solid #000;
-            border-radius: 8px;
-            box-shadow: 3px 3px 0px #000;
-            font-size: 14px;
-            font-weight: 700;
-            outline: none;
-        }
-
-        .social-buttons { display: flex; gap: 14px; justify-content: center; margin: 4px 0; }
-        .social-btn {
-            width: 42px; height: 42px; border-radius: 50%;
-            background-color: #fefae0; border: 2.5px solid #000;
-            box-shadow: 3px 3px 0px #000; display: flex;
-            justify-content: center; align-items: center;
-            font-weight: 800; cursor: pointer; user-select: none;
-        }
-
-        .btn-main {
-            background-color: #fefae0;
-            border: 2.5px solid #000;
-            box-shadow: 4px 4px 0px #000;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 15px;
+            font-size: 19px;
             font-weight: 800;
-            cursor: pointer;
-            transition: all 0.1s ease;
         }
-        .btn-main:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0px #000; }
 
-        #qr-result { display: flex; justify-content: center; margin-top: 10px; }
+        .brand-icon {
+            width: 36px;
+            height: 36px;
 
-        /* Text Section for AdSense "Low Value Content" Fix */
-        .content-section {
-            background: #ffffff;
-            border: 3px solid #000;
-            box-shadow: 6px 6px 0px #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
             border-radius: 10px;
+
+            background: #ffffff;
+            color: #000000;
+
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .free-badge {
+            padding: 7px 11px;
+
+            border: 1px solid #292929;
+            border-radius: 999px;
+
+            color: #bdbdbd;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        main {
             width: 100%;
-            max-width: 650px;
-            padding: 24px;
-            margin-top: 35px;
-            color: #222;
+            padding: 30px 16px 50px;
+        }
+
+        .hero {
+            width: 100%;
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .tag {
+            display: inline-block;
+
+            margin-bottom: 18px;
+            padding: 7px 12px;
+
+            border: 1px solid #292929;
+            border-radius: 999px;
+
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: clamp(34px, 10vw, 62px);
+            line-height: 1.03;
+            letter-spacing: -2px;
+            margin-bottom: 16px;
+        }
+
+        h1 span {
+            color: #888;
+        }
+
+        .subtitle {
+            max-width: 460px;
+            margin: auto;
+
+            color: #999;
+            font-size: 15px;
             line-height: 1.6;
         }
-        .content-section h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
-        .content-section h3 { font-size: 16px; font-weight: 700; margin-top: 16px; margin-bottom: 4px; }
-        .content-section p, .content-section ul { font-size: 14px; font-weight: 500; color: #444; }
 
-        .legal-footer { margin-top: 30px; text-align: center; font-size: 13px; font-weight: 700; }
-        .legal-footer a { color: #000; text-decoration: underline; margin: 0 8px; }
+        /* =========================
+           GENERATOR CARD
+        ========================= */
+
+        .generator {
+            width: 100%;
+            max-width: 600px;
+
+            margin: 30px auto 0;
+            padding: 18px;
+
+            background: #111111;
+
+            border: 1px solid #292929;
+            border-radius: 22px;
+
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.45);
+        }
+
+        .input-label {
+            display: block;
+
+            margin-bottom: 9px;
+
+            color: #aaa;
+            font-size: 13px;
+            font-weight: 600;
+
+            text-align: left;
+        }
+
+        .input {
+            width: 100%;
+
+            min-height: 54px;
+
+            padding: 15px;
+
+            border: 1px solid #303030;
+            border-radius: 13px;
+
+            outline: none;
+
+            background: #080808;
+            color: white;
+
+            font-size: 16px;
+
+            transition: border 0.2s;
+        }
+
+        .input:focus {
+            border-color: #777;
+        }
+
+        .generate {
+            width: 100%;
+
+            min-height: 54px;
+
+            margin-top: 12px;
+
+            border: none;
+            border-radius: 13px;
+
+            background: white;
+            color: black;
+
+            font-size: 16px;
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.15s,
+                opacity 0.15s;
+        }
+
+        .generate:active {
+            transform: scale(0.98);
+        }
+
+        .generate:hover {
+            opacity: 0.88;
+        }
+
+        /* =========================
+           QR RESULT
+        ========================= */
+
+        .result {
+            margin-top: 22px;
+
+            padding: 18px;
+
+            border-top: 1px solid #292929;
+
+            text-align: center;
+        }
+
+        .result-title {
+            margin-bottom: 14px;
+
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .qr-box {
+            display: inline-flex;
+
+            padding: 12px;
+
+            background: white;
+
+            border-radius: 16px;
+        }
+
+        .qr-box img {
+            display: block;
+
+            width: min(70vw, 260px);
+            height: auto;
+        }
+
+        .download {
+            width: 100%;
+
+            min-height: 52px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-top: 16px;
+
+            border-radius: 13px;
+
+            background: #222;
+            border: 1px solid #333;
+
+            color: white;
+
+            text-decoration: none;
+
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .download:active {
+            transform: scale(0.98);
+        }
+
+        /* =========================
+           FEATURES
+        ========================= */
+
+        .features {
+            width: 100%;
+            max-width: 600px;
+
+            margin: 28px auto 0;
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 8px;
+        }
+
+        .feature {
+            padding: 14px 7px;
+
+            border: 1px solid #222;
+            border-radius: 14px;
+
+            background: #0e0e0e;
+
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 18px;
+            margin-bottom: 7px;
+        }
+
+        .feature-text {
+            color: #999;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            padding: 20px 16px 30px;
+
+            text-align: center;
+
+            color: #555;
+            font-size: 12px;
+        }
+
+        /* =========================
+           TABLET / DESKTOP
+        ========================= */
+
+        @media (min-width: 700px) {
+
+            header {
+                padding: 25px 30px;
+            }
+
+            main {
+                padding-top: 60px;
+            }
+
+            .generator {
+                padding: 24px;
+            }
+
+            .features {
+                gap: 12px;
+            }
+
+            .feature {
+                padding: 18px;
+            }
+
+        }
+
     </style>
+
 </head>
+
+
 <body>
 
-    <!-- MAIN APP CONTAINER -->
-    <div class="card">
-        {% if not user %}
-        <div class="header">
-            <h1>Welcome,</h1>
-            <p>sign up to continue</p>
-        </div>
 
-        <div class="form-group">
-            <input type="email" id="email" class="input-field" placeholder="Email" required />
-            <input type="password" id="password" class="input-field" placeholder="Password" required />
+<header>
 
-            <div class="social-buttons">
-                <div class="social-btn">t</div>
-                <div class="social-btn">G</div>
-                <div class="social-btn">f</div>
+    <nav class="navbar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                QR
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-main" onclick="handleAuth('/signup')" style="flex:1;">Sign Up</button>
-                <button class="btn-main" onclick="handleAuth('/login')" style="flex:1;">Login</button>
+            QRCraft
+
+        </div>
+
+        <div class="free-badge">
+            100% Free
+        </div>
+
+    </nav>
+
+</header>
+
+
+<main>
+
+    <section class="hero">
+
+        <div class="tag">
+            ⚡ Instant QR Generation
+        </div>
+
+        <h1>
+            Create QR codes
+            <span>in seconds.</span>
+        </h1>
+
+        <p class="subtitle">
+            Turn any URL or text into a clean,
+            downloadable QR code — completely free.
+        </p>
+
+    </section>
+
+
+    <section class="generator">
+
+        <form method="POST">
+
+            <label class="input-label">
+                Enter URL or text
+            </label>
+
+            <input
+                class="input"
+                type="text"
+                name="text"
+                value="{{ entered_text }}"
+                placeholder="https://example.com"
+                autocomplete="off"
+                required
+            >
+
+            <button
+                class="generate"
+                type="submit"
+            >
+                Generate QR Code
+            </button>
+
+        </form>
+
+
+        {% if qr_image %}
+
+        <div class="result">
+
+            <div class="result-title">
+                Your QR code is ready
             </div>
+
+            <div class="qr-box">
+
+                <img
+                    src="data:image/png;base64,{{ qr_image | b64encode }}"
+                    alt="Generated QR Code"
+                >
+
+            </div>
+
+            <a
+                class="download"
+                href="/download"
+            >
+                ↓ &nbsp; Download PNG
+            </a>
+
         </div>
 
-        {% else %}
-        <div class="header">
-            <h1>QRCraft Studio</h1>
-            <p>Credits Left: <strong id="credits">{{ credits }}</strong></p>
-        </div>
-
-        <div class="form-group">
-            <input type="text" id="qrText" class="input-field" placeholder="Paste URL or Text" />
-            <button class="btn-main" onclick="generateQR()">Generate QR &rarr;</button>
-            <button class="btn-main" onclick="buyCredits()" style="background-color: #b5e2fa;">Buy 500 Credits (₹99)</button>
-        </div>
-
-        <div id="qr-result"></div>
-        <a href="/logout" style="text-align: center; font-size: 12px; font-weight: bold; color: red; margin-top: 10px;">Logout</a>
         {% endif %}
-    </div>
 
-    <!-- PUBLISHER CONTENT SECTION (Fixes AdSense Low Value Content Error) -->
-    <div class="content-section">
-        <h2>Free High-Resolution QR Code Generator</h2>
-        <p>QRCraft Pro Studio is a fast, web-based utility tool designed to help individuals and businesses create high-quality QR codes instantly. Whether you want to share website URLs, social media profiles, or Wi-Fi configurations, our tool converts your data into scannable dynamic codes seamlessly.</p>
+    </section>
 
-        <h3>Key Features of QRCraft Studio</h3>
-        <ul style="margin-left: 20px;">
-            <li><strong>Client-Side Speed:</strong> Ultra-fast vector rendering with zero network delay.</li>
-            <li><strong>High-Resolution Downloads:</strong> Perfect for print on business cards, menus, and banners.</li>
-            <li><strong>100% Privacy Focused:</strong> Generated QR codes are processed securely.</li>
-        </ul>
 
-        <h3>Frequently Asked Questions</h3>
-        <p><strong>Q: Do these QR codes expire?</strong><br>A: No, all standard QR codes generated on QRCraft Studio are permanent and never expire.</p>
-        <p style="margin-top:6px;"><strong>Q: Can I use generated QR codes commercially?</strong><br>A: Yes, you can freely use your generated codes for both personal and commercial projects.</p>
-    </div>
+    <section class="features">
 
-    <!-- LEGAL COMPLIANCE FOOTER -->
-    <div class="legal-footer">
-        <a href="/terms">Terms</a> | 
-        <a href="/privacy">Privacy Policy</a> | 
-        <a href="/refund">Refund Policy</a> | 
-        <a href="/contact">Contact Us</a>
-    </div>
+        <div class="feature">
 
-    <script>
-        async function handleAuth(url) {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            <div class="feature-icon">
+                ⚡
+            </div>
 
-            if(!email || !password) return alert("Please fill Email & Password!");
+            <div class="feature-text">
+                Instant
+            </div>
 
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
+        </div>
 
-            const data = await res.json();
-            alert(data.message);
-            if(data.status === 'success') window.location.reload();
-        }
 
-        function generateQR() {
-            const qrText = document.getElementById('qrText').value;
-            const qrContainer = document.getElementById('qr-result');
-            
-            if(!qrText) return alert("Enter URL or text first!");
-            
-            qrContainer.innerHTML = "";
-            new QRCode(qrContainer, {
-                text: qrText,
-                width: 170,
-                height: 170
-            });
-        }
+        <div class="feature">
 
-        function buyCredits() {
-            var options = {
-                "key": "YOUR_RAZORPAY_KEY", 
-                "amount": "9900",
-                "currency": "INR",
-                "name": "QRCraft Studio",
-                "description": "500 Credits Recharge",
-                "handler": function (response){
-                    alert("Payment Success! ID: " + response.razorpay_payment_id);
-                },
-                "theme": { "color": "#a2d2e2" }
-            };
-            var rzp = new Razorpay(options);
-            rzp.open();
-        }
-    </script>
+            <div class="feature-icon">
+                🔒
+            </div>
+
+            <div class="feature-text">
+                Simple & Safe
+            </div>
+
+        </div>
+
+
+        <div class="feature">
+
+            <div class="feature-icon">
+                📱
+            </div>
+
+            <div class="feature-text">
+                Mobile Ready
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    QRCraft © 2026 · Free QR Code Generator
+
+</footer>
+
+
 </body>
+
 </html>

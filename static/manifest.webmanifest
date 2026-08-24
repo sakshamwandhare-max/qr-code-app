@@ -1,0 +1,9 @@
+{
+  "name": "QRCraft — Free QR Code Generator",
+  "short_name": "QRCraft",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06100b",
+  "theme_color": "#06100b",
+  "description": "Simple, free and mobile-first QR code generator."
+}

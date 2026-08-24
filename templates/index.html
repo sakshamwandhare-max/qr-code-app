@@ -1,145 +1,1389 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>QR Code Generator</title>
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="theme-color"
+        content="#03130d"
+    >
+
+    <title>QRCraft Pro — Free QR Code Generator</title>
+
 
     <style>
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
         }
+
+
+        :root {
+            --bg: #020806;
+            --card: rgba(8, 24, 18, 0.72);
+            --card-border: rgba(90, 255, 180, 0.14);
+            --green: #39ff9b;
+            --green-dark: #0d9d5b;
+            --text: #f4fff9;
+            --muted: #8fa99c;
+            --input: rgba(255,255,255,0.045);
+        }
+
 
         body {
+
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #f4f6f8;
+
+            background:
+                radial-gradient(
+                    circle at 15% 10%,
+                    rgba(0,255,140,0.12),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 85% 20%,
+                    rgba(0,255,100,0.10),
+                    transparent 25%
+                ),
+                radial-gradient(
+                    circle at 50% 100%,
+                    rgba(0,180,90,0.12),
+                    transparent 35%
+                ),
+                #020806;
+
+            color: var(--text);
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            overflow-x: hidden;
         }
 
-        .container {
-            width: 90%;
-            max-width: 500px;
-            background: white;
-            padding: 35px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 35px rgba(0,0,0,0.12);
+
+        /* =====================================
+           BACKGROUND GLOW
+        ===================================== */
+
+        body::before {
+
+            content: "";
+
+            position: fixed;
+
+            width: 420px;
+            height: 420px;
+
+            left: -180px;
+            top: 25%;
+
+            background: #00ff88;
+
+            filter: blur(180px);
+
+            opacity: 0.07;
+
+            pointer-events: none;
         }
+
+
+        body::after {
+
+            content: "";
+
+            position: fixed;
+
+            width: 400px;
+            height: 400px;
+
+            right: -180px;
+            bottom: 10%;
+
+            background: #00ff88;
+
+            filter: blur(180px);
+
+            opacity: 0.06;
+
+            pointer-events: none;
+        }
+
+
+        /* =====================================
+           HEADER
+        ===================================== */
+
+        header {
+
+            width: 100%;
+
+            padding: 18px 16px;
+
+            border-bottom:
+                1px solid rgba(255,255,255,0.05);
+        }
+
+
+        .navbar {
+
+            max-width: 1180px;
+
+            margin: auto;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 18px;
+
+            font-weight: 800;
+        }
+
+
+        .brand-icon {
+
+            width: 35px;
+            height: 35px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #dffff0,
+                    #5cffad
+                );
+
+            color: #032014;
+
+            font-size: 11px;
+
+            font-weight: 900;
+
+            box-shadow:
+                0 0 25px rgba(57,255,155,0.2);
+        }
+
+
+        .pro {
+
+            padding: 6px 10px;
+
+            border-radius: 999px;
+
+            background:
+                rgba(57,255,155,0.08);
+
+            border:
+                1px solid rgba(57,255,155,0.2);
+
+            color: var(--green);
+
+            font-size: 10px;
+
+            letter-spacing: 0.5px;
+
+            font-weight: 800;
+        }
+
+
+        .free {
+
+            display: none;
+
+            color: var(--muted);
+
+            font-size: 12px;
+        }
+
+
+        /* =====================================
+           HERO
+        ===================================== */
+
+        .hero {
+
+            max-width: 850px;
+
+            margin: auto;
+
+            padding:
+                48px 18px 25px;
+
+            text-align: center;
+        }
+
+
+        .eyebrow {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            padding: 7px 12px;
+
+            margin-bottom: 18px;
+
+            border-radius: 999px;
+
+            border:
+                1px solid rgba(57,255,155,0.18);
+
+            background:
+                rgba(57,255,155,0.05);
+
+            color: var(--green);
+
+            font-size: 11px;
+
+            font-weight: 700;
+        }
+
+
+        .dot {
+
+            width: 6px;
+            height: 6px;
+
+            border-radius: 50%;
+
+            background: var(--green);
+
+            box-shadow:
+                0 0 10px var(--green);
+        }
+
 
         h1 {
-            margin-bottom: 10px;
-            font-size: 32px;
+
+            font-size:
+                clamp(38px, 9vw, 76px);
+
+            line-height: 0.98;
+
+            letter-spacing: -3px;
+
+            margin-bottom: 18px;
         }
 
-        .subtitle {
-            color: #777;
-            margin-bottom: 25px;
+
+        h1 span {
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #ffffff,
+                    #43ff9f
+                );
+
+            -webkit-background-clip: text;
+
+            background-clip: text;
+
+            color: transparent;
         }
 
-        input {
-            width: 100%;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
+
+        .hero p {
+
+            max-width: 560px;
+
+            margin: auto;
+
+            color: var(--muted);
+
+            font-size: 14px;
+
+            line-height: 1.7;
+        }
+
+
+        /* =====================================
+           APP
+        ===================================== */
+
+        .app {
+
+            width: calc(100% - 28px);
+
+            max-width: 1180px;
+
+            margin:
+                10px auto 45px;
+
+            display: grid;
+
+            grid-template-columns: 1fr;
+
+            gap: 14px;
+        }
+
+
+        .panel {
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(16,38,28,0.78),
+                    rgba(5,16,11,0.82)
+                );
+
+            border:
+                1px solid var(--card-border);
+
+            border-radius: 22px;
+
+            padding: 18px;
+
+            backdrop-filter: blur(20px);
+
+            box-shadow:
+                0 25px 80px rgba(0,0,0,0.35);
+        }
+
+
+        /* =====================================
+           LEFT PANEL
+        ===================================== */
+
+        .panel-title {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 20px;
+        }
+
+
+        .panel-title h2 {
+
             font-size: 16px;
+        }
+
+
+        .panel-title span {
+
+            color: #60796c;
+
+            font-size: 11px;
+        }
+
+
+        label {
+
+            display: block;
+
+            margin:
+                15px 0 8px;
+
+            color: #a4b8ae;
+
+            font-size: 11px;
+
+            font-weight: 700;
+        }
+
+
+        textarea,
+        select {
+
+            width: 100%;
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
+            border-radius: 12px;
+
             outline: none;
-            margin-bottom: 15px;
-        }
 
-        input:focus {
-            border-color: #111;
-        }
+            background: var(--input);
 
-        button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            background: #111;
             color: white;
-            font-size: 16px;
+
+            font-size: 14px;
+        }
+
+
+        textarea {
+
+            min-height: 105px;
+
+            resize: vertical;
+
+            padding: 14px;
+
+            font-family: inherit;
+        }
+
+
+        textarea:focus,
+        select:focus {
+
+            border-color:
+                rgba(57,255,155,0.4);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(57,255,155,0.05);
+        }
+
+
+        select {
+
+            height: 48px;
+
+            padding: 0 12px;
+        }
+
+
+        option {
+
+            background: #08130e;
+
+            color: white;
+        }
+
+
+        .row {
+
+            display: grid;
+
+            grid-template-columns: 1fr;
+
+            gap: 10px;
+        }
+
+
+        .color-row {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+        }
+
+
+        .color-control {
+
+            height: 48px;
+
+            padding: 6px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
+            border-radius: 12px;
+
+            background: var(--input);
+        }
+
+
+        input[type="color"] {
+
+            width: 35px;
+            height: 35px;
+
+            padding: 0;
+
+            border: none;
+
+            background: transparent;
+
             cursor: pointer;
         }
 
-        button:hover {
-            opacity: 0.85;
+
+        .generate {
+
+            width: 100%;
+
+            height: 52px;
+
+            margin-top: 20px;
+
+            border: none;
+
+            border-radius: 12px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #eafff4,
+                    #52ffa8
+                );
+
+            color: #03140c;
+
+            font-size: 14px;
+
+            font-weight: 900;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 8px 30px
+                rgba(57,255,155,0.12);
+
+            transition: 0.2s;
         }
 
-        .qr {
-            margin-top: 25px;
+
+        .generate:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 12px 40px
+                rgba(57,255,155,0.2);
         }
 
-        .qr img {
-            width: 220px;
-            height: 220px;
-            border-radius: 10px;
+
+        /* =====================================
+           RIGHT PREVIEW
+        ===================================== */
+
+        .preview {
+
+            min-height: 390px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
         }
 
-        .download {
+
+        .preview-label {
+
+            margin-bottom: 18px;
+
+            color: #728c80;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+        }
+
+
+        .qr-wrapper {
+
+            padding: 16px;
+
+            background: white;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 0 60px
+                rgba(57,255,155,0.08);
+        }
+
+
+        .qr-wrapper img {
+
             display: block;
-            margin-top: 15px;
-            padding: 13px;
-            background: #e9e9e9;
-            color: #111;
-            text-decoration: none;
-            border-radius: 10px;
+
+            width: min(62vw, 270px);
+
+            height: auto;
+
+            image-rendering: pixelated;
         }
 
-        .download:hover {
-            background: #ddd;
+
+        .empty {
+
+            width: 230px;
+            height: 230px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border:
+                1px dashed
+                rgba(57,255,155,0.2);
+
+            border-radius: 18px;
+
+            color: #536c60;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+
+            padding: 30px;
         }
+
+
+        .actions {
+
+            width: 100%;
+
+            max-width: 300px;
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 9px;
+
+            margin-top: 18px;
+        }
+
+
+        .action {
+
+            height: 44px;
+
+            border:
+                1px solid rgba(255,255,255,0.08);
+
+            border-radius: 10px;
+
+            background:
+                rgba(255,255,255,0.04);
+
+            color: #d9e6df;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            text-decoration: none;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            cursor: pointer;
+        }
+
+
+        .action.primary {
+
+            background:
+                rgba(57,255,155,0.12);
+
+            border-color:
+                rgba(57,255,155,0.2);
+
+            color: var(--green);
+        }
+
+
+        /* =====================================
+           HISTORY
+        ===================================== */
+
+        .history {
+
+            max-width: 1180px;
+
+            width: calc(100% - 28px);
+
+            margin:
+                0 auto 50px;
+        }
+
+
+        .history-head {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 12px;
+        }
+
+
+        .history-head h2 {
+
+            font-size: 16px;
+        }
+
+
+        .clear {
+
+            border: none;
+
+            background: transparent;
+
+            color: #61776c;
+
+            font-size: 11px;
+
+            cursor: pointer;
+        }
+
+
+        .history-list {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+        }
+
+
+        .history-item {
+
+            padding: 12px;
+
+            border:
+                1px solid rgba(255,255,255,0.06);
+
+            border-radius: 13px;
+
+            background:
+                rgba(255,255,255,0.025);
+
+            color: #9db0a6;
+
+            font-size: 12px;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+        }
+
+
+        /* =====================================
+           FOOTER
+        ===================================== */
+
+        footer {
+
+            padding:
+                20px 16px 35px;
+
+            text-align: center;
+
+            color: #41544a;
+
+            font-size: 11px;
+        }
+
+
+        /* =====================================
+           DESKTOP
+        ===================================== */
+
+        @media (min-width: 760px) {
+
+            header {
+
+                padding:
+                    20px 30px;
+            }
+
+
+            .free {
+
+                display: block;
+            }
+
+
+            .navbar {
+
+                gap: 20px;
+            }
+
+
+            .app {
+
+                grid-template-columns:
+                    minmax(350px, 0.9fr)
+                    minmax(400px, 1.1fr);
+
+                gap: 18px;
+            }
+
+
+            .panel {
+
+                padding: 25px;
+            }
+
+
+            .row {
+
+                grid-template-columns: 1fr 1fr;
+            }
+
+
+            .preview {
+
+                min-height: 540px;
+            }
+
+
+            .qr-wrapper img {
+
+                width: 290px;
+            }
+
+        }
+
+
+        /* =====================================
+           SMALL PHONES
+        ===================================== */
+
+        @media (max-width: 380px) {
+
+            h1 {
+
+                font-size: 34px;
+
+                letter-spacing: -2px;
+            }
+
+
+            .app {
+
+                width: calc(100% - 20px);
+            }
+
+
+            .panel {
+
+                padding: 14px;
+            }
+
+
+            .color-row {
+
+                grid-template-columns: 1fr;
+            }
+
+        }
+
     </style>
+
 </head>
+
 
 <body>
 
-<div class="container">
 
-    <h1>QR Generator</h1>
+<!-- HEADER -->
 
-    <p class="subtitle">
-        Create a QR code instantly
-    </p>
+<header>
 
-    <form method="POST">
+    <nav class="navbar">
 
-        <input
-            type="text"
-            name="text"
-            placeholder="Enter URL or text..."
-            required
-        >
+        <div class="brand">
 
-        <button type="submit">
-            Generate QR Code
-        </button>
+            <div class="brand-icon">
+                QR
+            </div>
 
-    </form>
+            QRCraft
 
-    {% if qr_image %}
+            <span class="pro">
+                PRO UI
+            </span>
 
-    <div class="qr">
+        </div>
 
-        <img
-            src="data:image/png;base64,{{ qr_image | b64encode }}"
-            alt="QR Code"
-        >
 
-        <a href="/download" class="download">
-            Download QR Code
-        </a>
+        <div class="free">
+            100% Free · No signup required
+        </div>
+
+    </nav>
+
+</header>
+
+
+<!-- HERO -->
+
+<section class="hero">
+
+    <div class="eyebrow">
+
+        <span class="dot"></span>
+
+        FREE QR GENERATOR
 
     </div>
 
-    {% endif %}
 
-</div>
+    <h1>
+
+        Create your
+
+        <span>QR code.</span>
+
+    </h1>
+
+
+    <p>
+
+        Generate beautiful, customizable QR codes
+        instantly. No account. No payment.
+        Just create and download.
+
+    </p>
+
+</section>
+
+
+<!-- MAIN APP -->
+
+<main class="app">
+
+
+    <!-- SETTINGS -->
+
+    <section class="panel">
+
+        <div class="panel-title">
+
+            <h2>
+                QR Configuration
+            </h2>
+
+            <span>
+                Customize
+            </span>
+
+        </div>
+
+
+        <form method="POST">
+
+
+            <label>
+                CONTENT
+            </label>
+
+
+            <textarea
+                name="text"
+                placeholder="Enter a URL, text, contact information..."
+                required
+            >{{ entered_text }}</textarea>
+
+
+            <div class="row">
+
+
+                <div>
+
+                    <label>
+                        SIZE
+                    </label>
+
+                    <select name="size">
+
+                        <option
+                            value="256"
+                            {% if qr_size == "256" %}selected{% endif %}
+                        >
+                            Small (256px)
+                        </option>
+
+                        <option
+                            value="512"
+                            {% if qr_size == "512" %}selected{% endif %}
+                        >
+                            Large (512px)
+                        </option>
+
+                        <option
+                            value="1024"
+                            {% if qr_size == "1024" %}selected{% endif %}
+                        >
+                            Extra Large (1024px)
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div>
+
+                    <label>
+                        ERROR CORRECTION
+                    </label>
+
+                    <select name="error">
+
+                        <option value="L">
+                            Low (7%)
+                        </option>
+
+                        <option
+                            value="M"
+                            {% if error_level == "M" %}selected{% endif %}
+                        >
+                            Medium (15%)
+                        </option>
+
+                        <option
+                            value="Q"
+                            {% if error_level == "Q" %}selected{% endif %}
+                        >
+                            Quartile (25%)
+                        </option>
+
+                        <option
+                            value="H"
+                            {% if error_level == "H" %}selected{% endif %}
+                        >
+                            High (30%)
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <label>
+                COLORS
+            </label>
+
+
+            <div class="color-row">
+
+
+                <div class="color-control">
+
+                    <input
+                        type="color"
+                        name="foreground"
+                        value="{{ foreground }}"
+                    >
+
+                    <span>
+                        Foreground
+                    </span>
+
+                </div>
+
+
+                <div class="color-control">
+
+                    <input
+                        type="color"
+                        name="background"
+                        value="{{ background }}"
+                    >
+
+                    <span>
+                        Background
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <button
+                class="generate"
+                type="submit"
+            >
+
+                ✦ Generate QR Code
+
+            </button>
+
+
+        </form>
+
+    </section>
+
+
+    <!-- PREVIEW -->
+
+    <section class="panel preview">
+
+
+        <div class="preview-label">
+            Live Preview
+        </div>
+
+
+        {% if qr_image %}
+
+            <div class="qr-wrapper">
+
+                <img
+                    src="data:image/png;base64,{{ qr_image | b64encode }}"
+                    alt="Generated QR Code"
+                >
+
+            </div>
+
+
+            <div class="actions">
+
+
+                <a
+                    class="action primary"
+                    href="/download"
+                >
+                    ↓ Download PNG
+                </a>
+
+
+                <button
+                    class="action"
+                    type="button"
+                    onclick="copyText()"
+                >
+                    ⧉ Copy Text
+                </button>
+
+
+            </div>
+
+
+        {% else %}
+
+            <div class="empty">
+
+                Your generated QR code
+                will appear here.
+
+            </div>
+
+        {% endif %}
+
+
+    </section>
+
+
+</main>
+
+
+<!-- HISTORY -->
+
+<section class="history">
+
+    <div class="history-head">
+
+        <h2>
+            Recent Generations
+        </h2>
+
+
+        <button
+            class="clear"
+            onclick="clearHistory()"
+        >
+            Clear All
+        </button>
+
+    </div>
+
+
+    <div
+        class="history-list"
+        id="historyList"
+    ></div>
+
+</section>
+
+
+<footer>
+
+    QRCraft © 2026 · Free QR Code Generator
+
+</footer>
+
+
+<script>
+
+    const currentText =
+        {{ entered_text | tojson }};
+
+
+    function saveHistory() {
+
+        if (!currentText) return;
+
+        let history =
+            JSON.parse(
+                localStorage.getItem("qrHistory") || "[]"
+            );
+
+
+        history =
+            history.filter(
+                item => item !== currentText
+            );
+
+
+        history.unshift(currentText);
+
+
+        history =
+            history.slice(0, 5);
+
+
+        localStorage.setItem(
+            "qrHistory",
+            JSON.stringify(history)
+        );
+
+    }
+
+
+    function showHistory() {
+
+        const list =
+            document.getElementById(
+                "historyList"
+            );
+
+
+        const history =
+            JSON.parse(
+                localStorage.getItem("qrHistory") || "[]"
+            );
+
+
+        list.innerHTML = "";
+
+
+        if (history.length === 0) {
+
+            const empty =
+                document.createElement("div");
+
+            empty.className =
+                "history-item";
+
+            empty.textContent =
+                "No recent generations yet.";
+
+            list.appendChild(empty);
+
+            return;
+        }
+
+
+        history.forEach(item => {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "history-item";
+
+            div.textContent = item;
+
+            list.appendChild(div);
+
+        });
+
+    }
+
+
+    function clearHistory() {
+
+        localStorage.removeItem(
+            "qrHistory"
+        );
+
+        showHistory();
+
+    }
+
+
+    async function copyText() {
+
+        if (!currentText) return;
+
+        try {
+
+            await navigator.clipboard.writeText(
+                currentText
+            );
+
+            alert("Text copied!");
+
+        } catch {
+
+            alert("Unable to copy text.");
+
+        }
+
+    }
+
+
+    saveHistory();
+
+    showHistory();
+
+</script>
+
 
 </body>
+
 </html>

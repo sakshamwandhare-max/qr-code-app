@@ -59,7 +59,61 @@ def inject_site_config():
 
 @app.get("/")
 def home():
-    return render_template("mobile_v3.html")
+    html = render_template("mobile_v3.html")
+    phone_css = r'''
+<style id="qrcraft-phone-layout">
+/* QRCraft mobile-first override: touch phones always use the stacked layout. */
+body.qrcraft-phone{font-size:16px}
+body.qrcraft-phone .nav{padding:14px 15px}
+body.qrcraft-phone .brand{font-size:16px}
+body.qrcraft-phone .logo{width:36px;height:36px}
+body.qrcraft-phone .hero{padding:30px 16px 22px}
+body.qrcraft-phone .hero h1{font-size:40px;line-height:1.02;letter-spacing:-2px;margin:18px 0 14px}
+body.qrcraft-phone .hero p{font-size:14px;line-height:1.65}
+body.qrcraft-phone .workspace{width:100%;max-width:520px;padding:0 10px;margin:8px auto 28px}
+body.qrcraft-phone .card{display:block!important;border-radius:20px}
+body.qrcraft-phone .toolbar{padding:16px 14px 2px!important}
+body.qrcraft-phone .toolbar-head h2{font-size:18px}
+body.qrcraft-phone .small{font-size:11px}
+body.qrcraft-phone .type-scroller{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;gap:9px;padding:3px 1px 15px;touch-action:pan-x;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+body.qrcraft-phone .type-scroller::-webkit-scrollbar{display:none}
+body.qrcraft-phone .type{flex:0 0 82px!important;width:82px!important;min-width:82px!important;height:74px!important;font-size:11px!important;border-radius:14px}
+body.qrcraft-phone .type b{font-size:21px}
+body.qrcraft-phone .form-area{display:block!important;padding:0 14px 21px!important}
+body.qrcraft-phone .field{margin-top:16px!important}
+body.qrcraft-phone .field label{font-size:11px!important;margin-bottom:8px}
+body.qrcraft-phone .input,body.qrcraft-phone .select{height:55px!important;font-size:16px!important;padding-left:14px;padding-right:14px}
+body.qrcraft-phone .textarea{min-height:115px!important;font-size:16px!important;padding:14px}
+body.qrcraft-phone .two{display:grid!important;grid-template-columns:1fr!important;gap:0!important}
+body.qrcraft-phone .primary{height:56px!important;margin-top:20px;font-size:15px!important}
+body.qrcraft-phone .preview-wrap{display:flex!important;flex-direction:column!important;grid-column:auto!important;grid-row:auto!important;border-top:1px solid rgba(255,255,255,.06)!important;border-left:0!important;min-height:0!important;padding:25px 14px 22px!important}
+body.qrcraft-phone .preview-title{font-size:11px;margin-bottom:16px}
+body.qrcraft-phone .empty{width:min(78vw,330px)!important;height:min(78vw,330px)!important;font-size:13px}
+body.qrcraft-phone #qrCanvas{width:min(78vw,330px)!important;height:min(78vw,330px)!important}
+body.qrcraft-phone .qr{padding:15px;border-radius:18px}
+body.qrcraft-phone .actions{grid-template-columns:1fr 1fr!important;max-width:430px;gap:9px;margin-top:16px}
+body.qrcraft-phone .secondary{height:48px;font-size:13px}
+body.qrcraft-phone .info{max-width:520px;padding:0 10px;margin-bottom:30px}
+body.qrcraft-phone .info-grid{grid-template-columns:1fr!important;gap:9px}
+body.qrcraft-phone .info-box{padding:14px}
+body.qrcraft-phone .info-box b{font-size:12px}.info-box span{font-size:10px}
+body.qrcraft-phone .ad-wrap{max-width:520px;padding:0 10px}
+body.qrcraft-phone footer{font-size:11px;padding-bottom:34px}
+</style>'''
+    phone_js = r'''<script id="qrcraft-phone-detect">
+(function(){
+  var touchDevice = navigator.maxTouchPoints > 0 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  if(touchDevice && window.innerWidth <= 1100){document.body.classList.add('qrcraft-phone');}
+  window.addEventListener('resize',function(){
+    if(touchDevice && window.innerWidth <= 1100) document.body.classList.add('qrcraft-phone');
+    else if(window.innerWidth > 1100) document.body.classList.remove('qrcraft-phone');
+  });
+})();
+</script>'''
+    html = html.replace("</head>", phone_css + "</head>")
+    html = html.replace("<body>", "<body>")
+    html = html.replace("</body>", phone_js + "</body>")
+    return make_response(html)
 
 
 @app.get("/terms")

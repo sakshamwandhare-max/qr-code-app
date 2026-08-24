@@ -33,10 +33,8 @@ def security_headers(response):
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://pagead2.googlesyndication.com; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: blob: https:; "
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://pagead2.googlesyndication.com; "
+        "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; "
         "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; "
         "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com; "
         "font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
@@ -56,14 +54,12 @@ def b64encode_filter(data):
 
 @app.context_processor
 def inject_site_config():
-    return {
-        "adsense_client_id": os.getenv("ADSENSE_CLIENT_ID", "").strip()
-    }
+    return {"adsense_client_id": os.getenv("ADSENSE_CLIENT_ID", "").strip()}
 
 
 @app.get("/")
 def home():
-    return render_template("mobile.html")
+    return render_template("mobile_v2.html")
 
 
 @app.get("/terms")
@@ -95,8 +91,7 @@ def robots():
 
 @app.get("/ads.txt")
 def ads_txt():
-    publisher = os.getenv("ADSENSE_CLIENT_ID", "").strip()
-    publisher = publisher.removeprefix("ca-")
+    publisher = os.getenv("ADSENSE_CLIENT_ID", "").strip().removeprefix("ca-")
     if not publisher.startswith("pub-"):
         return ("", 404)
     return (f"google.com, {publisher}, DIRECT, f08c47fec0942fa0\n", 200, {"Content-Type": "text/plain; charset=utf-8"})

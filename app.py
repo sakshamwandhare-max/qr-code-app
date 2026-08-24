@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, send_file, jsonify, abort, ma
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 import base64
+import os
 import secrets
 import time
 
@@ -30,11 +31,15 @@ def security_headers(response):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
-        "connect-src 'self'; font-src 'self'; object-src 'none'; "
-        "base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://pagead2.googlesyndication.com; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: blob: https:; "
+        "connect-src 'self' https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net; "
+        "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.google.com; "
+        "font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
     )
     return response
 
@@ -47,6 +52,13 @@ def add_security_headers(response):
 @app.template_filter("b64encode")
 def b64encode_filter(data):
     return base64.b64encode(data).decode("utf-8")
+
+
+@app.context_processor
+def inject_site_config():
+    return {
+        "adsense_client_id": os.getenv("ADSENSE_CLIENT_ID", "").strip()
+    }
 
 
 @app.get("/")
@@ -67,6 +79,27 @@ def privacy():
 @app.get("/sw.js")
 def service_worker():
     return send_file("static/sw.js", mimetype="application/javascript", max_age=0)
+
+
+@app.get("/manifest.webmanifest")
+def manifest():
+    return send_file("static/manifest.webmanifest", mimetype="application/manifest+json")
+
+
+@app.get("/robots.txt")
+def robots():
+    response = make_response("User-agent: *\nAllow: /\nAllow: /ads.txt\n", 200)
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    return response
+
+
+@app.get("/ads.txt")
+def ads_txt():
+    publisher = os.getenv("ADSENSE_CLIENT_ID", "").strip()
+    publisher = publisher.removeprefix("ca-")
+    if not publisher.startswith("pub-"):
+        return ("", 404)
+    return (f"google.com, {publisher}, DIRECT, f08c47fec0942fa0\n", 200, {"Content-Type": "text/plain; charset=utf-8"})
 
 
 @app.post("/api/photo")
@@ -121,19 +154,9 @@ def serve_photo(token):
     return response
 
 
-@app.get("/manifest.webmanifest")
-def manifest():
-    return send_file("static/manifest.webmanifest", mimetype="application/manifest+json")
-
-
 @app.errorhandler(413)
 def too_large(_error):
     return jsonify({"error": "Upload is too large. Maximum size is 5 MB."}), 413
-
-
-@app.get("/download")
-def download():
-    return ("Use the Download button after generating a QR code.", 404)
 
 
 @app.get("/health")

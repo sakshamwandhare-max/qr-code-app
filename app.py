@@ -16,7 +16,7 @@ upload_log = {}
 
 # Public publisher ID used by Google AdSense. This is not a secret.
 ADSENSE_PUBLISHER_ID = "pub-1786563700495703"
-ADSENSE_CLIENT_ID = "ca-1786563700495703"
+ADSENSE_CLIENT_ID = "ca-pub-1786563700495703"
 
 
 def cleanup_photos():
@@ -124,7 +124,7 @@ body.qrcraft-phone footer{font-size:11px!important;padding:20px 14px 34px!import
 </script>'''
     # Add the ownership meta tag at response time so the actually served page
     # contains it even when an older template is still present.
-    adsense_meta = '<meta name="google-adsense-account" content="ca-1786563700495703">'
+    adsense_meta = '<meta name="google-adsense-account" content="ca-pub-1786563700495703">'
     html = html.replace("</head>", adsense_meta + phone_css + "</head>")
     html = html.replace("</body>", phone_js + "</body>")
     return make_response(html)

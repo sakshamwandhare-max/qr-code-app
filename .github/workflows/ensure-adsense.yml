@@ -1,0 +1,54 @@
+name: Ensure AdSense verification code
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inject-adsense:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Add AdSense verification code to the page head
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("templates/index.html")
+          text = path.read_text(encoding="utf-8")
+
+          marker = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1786563700495703'
+          snippet = '''    <!-- Google AdSense -->
+              <script async
+                  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1786563700495703"
+                  crossorigin="anonymous"></script>\n\n'''
+
+          if marker not in text:
+              closing = text.lower().find("</head>")
+              if closing == -1:
+                  raise SystemExit("Could not find </head> in templates/index.html")
+              text = text[:closing] + snippet + text[closing:]
+              path.write_text(text, encoding="utf-8")
+              print("AdSense code inserted into templates/index.html")
+          else:
+              print("AdSense code already present")
+
+      - name: Commit injected code
+        shell: bash
+        run: |
+          if git diff --quiet -- templates/index.html; then
+            echo "No change needed."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add templates/index.html
+          git commit -m "Add Google AdSense verification code [skip ci]"
+          git push

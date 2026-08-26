@@ -14,6 +14,10 @@ MAX_PHOTOS = 100
 photos = {}
 upload_log = {}
 
+# Public publisher ID used by Google AdSense. This is not a secret.
+ADSENSE_PUBLISHER_ID = "pub-1786563700495703"
+ADSENSE_CLIENT_ID = "ca-1786563700495703"
+
 
 def cleanup_photos():
     now = time.time()
@@ -54,7 +58,9 @@ def b64encode_filter(data):
 
 @app.context_processor
 def inject_site_config():
-    return {"adsense_client_id": os.getenv("ADSENSE_CLIENT_ID", "").strip()}
+    # Keep AdSense enabled even if the hosting dashboard has no environment variable.
+    # The publisher/client ID is public and is intended to appear in page source.
+    return {"adsense_client_id": ADSENSE_CLIENT_ID}
 
 
 @app.get("/")
@@ -116,7 +122,10 @@ body.qrcraft-phone footer{font-size:11px!important;padding:20px 14px 34px!import
   window.addEventListener('resize', apply, {passive:true});
 })();
 </script>'''
-    html = html.replace("</head>", phone_css + "</head>")
+    # Add the ownership meta tag at response time so the actually served page
+    # contains it even when an older template is still present.
+    adsense_meta = '<meta name="google-adsense-account" content="ca-1786563700495703">'
+    html = html.replace("</head>", adsense_meta + phone_css + "</head>")
     html = html.replace("</body>", phone_js + "</body>")
     return make_response(html)
 
@@ -143,17 +152,35 @@ def manifest():
 
 @app.get("/robots.txt")
 def robots():
-    response = make_response("User-agent: *\nAllow: /\nAllow: /ads.txt\n", 200)
+    response = make_response(
+        "User-agent: *\nAllow: /\n\nUser-agent: Mediapartners-Google\nAllow: /\n\nUser-agent: Google-Display-Ads-Bot\nAllow: /\n\nSitemap: https://qr-code-app-ywvj.onrender.com/sitemap.xml\n",
+        200,
+    )
     response.headers["Content-Type"] = "text/plain; charset=utf-8"
     return response
 
 
 @app.get("/ads.txt")
 def ads_txt():
-    publisher = os.getenv("ADSENSE_CLIENT_ID", "").strip().removeprefix("ca-")
-    if not publisher.startswith("pub-"):
-        return ("", 404)
-    return (f"google.com, {publisher}, DIRECT, f08c47fec0942fa0\n", 200, {"Content-Type": "text/plain; charset=utf-8"})
+    response = make_response(
+        f"google.com, {ADSENSE_PUBLISHER_ID}, DIRECT, f08c47fec0942fa0\n",
+        200,
+    )
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    return response
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://qr-code-app-ywvj.onrender.com/</loc></url>
+  <url><loc>https://qr-code-app-ywvj.onrender.com/terms</loc></url>
+  <url><loc>https://qr-code-app-ywvj.onrender.com/privacy</loc></url>
+</urlset>'''
+    response = make_response(xml, 200)
+    response.headers["Content-Type"] = "application/xml; charset=utf-8"
+    return response
 
 
 @app.post("/api/photo")

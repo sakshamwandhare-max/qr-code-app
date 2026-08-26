@@ -1,0 +1,54 @@
+name: Add AdSense verification code
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  add-adsense:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Add AdSense snippet to index.html
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("templates/index.html")
+          text = path.read_text(encoding="utf-8")
+
+          snippet = '''    <!-- Google AdSense -->
+              <script async
+                  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1786563700495703"
+                  crossorigin="anonymous"></script>
+              <!-- End Google AdSense -->'''
+
+          if "ca-pub-1786563700495703" not in text:
+              marker = "</head>"
+              if marker not in text:
+                  raise SystemExit("Could not find </head> in templates/index.html")
+              text = text.replace(marker, snippet + "\n\n" + marker, 1)
+              path.write_text(text, encoding="utf-8")
+              print("AdSense snippet inserted.")
+          else:
+              print("AdSense snippet already present; no change needed.")
+
+      - name: Commit and push change
+        shell: bash
+        run: |
+          if git diff --quiet -- templates/index.html; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add templates/index.html
+          git commit -m "Add Google AdSense verification snippet"
+          git push

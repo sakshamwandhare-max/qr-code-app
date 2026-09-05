@@ -162,11 +162,13 @@ def robots():
 
 @app.get("/ads.txt")
 def ads_txt():
-    response = make_response(
-        f"google.com, {ADSENSE_PUBLISHER_ID}, DIRECT, f08c47fec0942fa0\n",
-        200,
-    )
+    # Keep this endpoint deliberately plain and public so Google's ads.txt
+    # crawler can read it without cookies, JavaScript, or authentication.
+    body = f"google.com, {ADSENSE_PUBLISHER_ID}, DIRECT, f08c47fec0942fa0\n"
+    response = make_response(body, 200)
     response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    response.headers["Cache-Control"] = "public, max-age=300, must-revalidate"
+    response.headers["X-Robots-Tag"] = "all"
     return response
 
 

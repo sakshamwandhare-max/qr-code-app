@@ -1,6 +1,5 @@
-const CACHE = 'qrcraft-v2';
+const CACHE = 'qrcraft-v3';
 const APP_SHELL = [
-  '/',
   '/manifest.webmanifest',
   'https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js'
 ];
@@ -17,6 +16,21 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.pathname.startsWith('/api/photo') || url.pathname.startsWith('/photo/')) return;
+
+  // Always try the network first for HTML/navigation so a new deployment
+  // becomes visible immediately instead of serving an old cached homepage.
+  if (event.request.mode === 'navigate' || url.pathname === '/') {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then(cache => cache.put(event.request, copy));
+        }
+        return response;
+      }).catch(() => caches.match(event.request).then(cached => cached || caches.match('/')))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then(cached => {
